@@ -1,26 +1,243 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Design tokens
+   A dark instrument panel. The blue is lifted from the marocreate logo, the
+   amber from the Humming Monster — the two brand assets this site has to hold
+   together. Blue is the ground the whole interface sits on; amber appears in
+   exactly one place at a time, on whatever is currently selected.
+   ========================================================================== */
+@theme {
+  /* --- surface --- */
+  --color-ground: #080b1a;
+  --color-ground-deep: #05070f;
+  --color-surface: #111935;
+  --color-surface-lift: #16203f;
+  --color-edge: #22305c;
+  --color-edge-soft: #182348;
+
+  /* --- ink --- */
+  --color-ink: #e9efff;
+  --color-ink-dim: #8b9bc6;
+  --color-ink-faint: #55648f;
+
+  /* --- brand --- */
+  --color-blue: #4c7df6;
+  --color-blue-lit: #7fb2ff;
+  --color-blue-deep: #2b4fb0;
+  --color-amber: #f5ce4e;
+
+  /* --- type --- */
+  --font-display: var(--font-outfit), var(--font-noto-jp), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+
+  /* --- easing --- */
+  --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-snap: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* --- view transition timings --- */
+  --duration-exit: 150ms;
+  --duration-enter: 210ms;
+  --duration-move: 400ms;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-weight: 300;
+  overscroll-behavior-y: none;
+}
+
+::selection {
+  background-color: var(--color-blue);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  transform: translateY(-250%);
+  transition: transform 200ms var(--ease-fluid);
+  background: var(--color-ink);
+  color: var(--color-ground);
+  padding: 0.6rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Lenis — only the stage-detail routes scroll; the console never does
+   ========================================================================== */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   View transitions
+   Direction is meaning: forward slides left, back slides right, and the HUD
+   stays put so the visitor keeps one fixed reference point.
+   ========================================================================== */
+::view-transition {
+  /* the overlay would otherwise swallow clicks mid-transition */
+  pointer-events: none;
+}
+
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes vt-slide {
+  from {
+    translate: var(--slide-offset);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+::view-transition-old(.nav-forward) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-exit) ease-in both vt-fade reverse,
+    var(--duration-move) ease-in-out both vt-slide reverse;
+}
+::view-transition-new(.nav-forward) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both vt-fade,
+    var(--duration-move) ease-in-out both vt-slide;
+}
+
+::view-transition-old(.nav-back) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-exit) ease-in both vt-fade reverse,
+    var(--duration-move) ease-in-out both vt-slide reverse;
+}
+::view-transition-new(.nav-back) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both vt-fade,
+    var(--duration-move) ease-in-out both vt-slide;
+}
+
+/* the selected stage label morphs into the stage heading */
+::view-transition-group(.stage-morph) {
+  animation-duration: 420ms;
+}
+::view-transition-image-pair(.stage-morph) {
+  animation-name: vt-morph-blur;
+}
+@keyframes vt-morph-blur {
+  30% {
+    filter: blur(2px);
+  }
+}
+
+/* the HUD is the anchor — it must not travel with the content */
+::view-transition-group(site-hud) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-hud) {
+  display: none;
+}
+::view-transition-new(site-hud) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ==========================================================================
+   The guide
+   Driven by remounting (a changing React key) rather than by state, so moving
+   through the menu costs no re-render of the menu itself.
+   ========================================================================== */
+@keyframes guide-perk {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  38% {
+    transform: translateY(-5px) rotate(-3deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes guide-note {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  28%,
+  68% {
+    opacity: 1;
+  }
+}
+
+.guide-perk {
+  animation: guide-perk 560ms var(--ease-snap);
+}
+
+.guide-note {
+  opacity: 0;
+  animation: guide-note 760ms ease-out;
 }
