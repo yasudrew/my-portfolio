@@ -5,7 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { glsl } from "@/gl/shaders/glsl";
-import { STAGES } from "@/content/stages";
+import type { StageId } from "@/content/stages";
 import { useConsoleStore } from "@/lib/state/console";
 import { budgetFor } from "@/lib/quality/detect";
 import { frameState } from "@/lib/state/frame";
@@ -126,11 +126,16 @@ export function LatticeField() {
   const smoothPointer = useRef(new THREE.Vector2(0.5, 0.5));
 
   // The band is the only part of the background that knows about the menu.
-  const target = useRef(0.5);
+  // Values are in shader UV, which is bottom-up while the board reads top-down.
+  const target = useRef(0.6);
   useEffect(() => {
-    const t = STAGES.length > 1 ? cursor / (STAGES.length - 1) : 0.5;
-    // shader UV is bottom-up, the menu reads top-down
-    target.current = 1 - (0.28 + t * 0.44);
+    const BAND: Record<StageId, number> = {
+      works: 0.62,
+      sound: 0.62,
+      thought: 0.4,
+      about: 0.5,
+    };
+    target.current = BAND[cursor];
   }, [cursor]);
 
   useFrame(() => {

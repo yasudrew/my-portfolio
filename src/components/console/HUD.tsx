@@ -53,23 +53,37 @@ export function HUD() {
 
       <nav
         aria-label="現在地"
-        className="flex items-center gap-2 font-mono text-[0.7rem] tracking-[0.16em] uppercase"
+        className="flex items-center gap-4 font-mono text-[0.7rem] tracking-[0.16em] uppercase"
       >
-        {stage ? (
-          <>
-            <Link
-              href="/"
-              transitionTypes={["nav-back"]}
-              className="text-ink-faint transition-colors duration-200 hover:text-blue-lit"
-            >
-              Menu
-            </Link>
-            <span className="text-edge">/</span>
-            <span className="text-blue-lit">{stage.label}</span>
-          </>
-        ) : (
-          <span className="text-blue-lit">Menu</span>
-        )}
+        <span className="flex items-center gap-2">
+          {stage ? (
+            <>
+              <Link
+                href="/"
+                transitionTypes={["nav-back"]}
+                className="text-ink-faint transition-colors duration-200 hover:text-blue-lit"
+              >
+                Menu
+              </Link>
+              <span className="text-edge">/</span>
+              <span className="text-blue-lit">{stage.label}</span>
+            </>
+          ) : (
+            <span className="text-blue-lit">Menu</span>
+          )}
+        </span>
+
+        {/* About is information about a person, not something they made, so it
+            sits in the frame rather than on the board with the work. */}
+        {pathname !== "/about" ? (
+          <Link
+            href="/about"
+            transitionTypes={["nav-forward"]}
+            className="text-ink-faint transition-colors duration-200 hover:text-ink"
+          >
+            About
+          </Link>
+        ) : null}
       </nav>
     </header>
   );
