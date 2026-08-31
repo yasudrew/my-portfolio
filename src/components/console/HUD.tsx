@@ -39,8 +39,9 @@ export function HUD() {
           priority
           className="h-6 w-auto shrink-0 opacity-90 transition-opacity duration-200 group-hover:opacity-100"
         />
-        <span className="text-[0.95rem] font-normal tracking-tight text-ink">
-          Yasuhiko Kawamura
+        {/* the brand name, set lowercase as the logo does */}
+        <span className="text-[0.95rem] font-normal tracking-tight text-ink lowercase">
+          marocreate
         </span>
       </Link>
 

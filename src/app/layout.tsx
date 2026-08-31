@@ -29,8 +29,8 @@ const notoSansJP = Noto_Sans_JP({
 
 export const metadata: Metadata = {
   title: {
-    default: "Yasuhiko Kawamura — Portfolio",
-    template: "%s — Yasuhiko Kawamura",
+    default: "marocreate — Portfolio",
+    template: "%s — marocreate",
   },
   description:
     "フロントエンドエンジニア、音楽プロデューサー。つくったものを選んで開くポートフォリオ。",
