@@ -147,7 +147,8 @@ export function StageMenu() {
 
   return (
     <>
-      <div className="mx-auto grid min-h-0 w-full max-w-5xl flex-1 grid-rows-[auto_auto_1fr] gap-6 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
+      <div className="mx-auto grid min-h-0 w-full max-w-5xl flex-1 grid-rows-[1fr_auto] gap-6 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
+      <div className="grid content-center gap-6">
         <MainPanel
           stage={main}
           selected={cursor === main.id}
@@ -178,6 +179,8 @@ export function StageMenu() {
             ))}
           </div>
         </div>
+
+      </div>
 
         <div
           className="stage-in flex items-end justify-between gap-6 pb-1"
