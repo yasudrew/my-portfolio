@@ -8,24 +8,24 @@ import { HummingMonster } from "@/components/console/HummingMonster";
 import { KeyGuide } from "@/components/console/KeyGuide";
 import { STAGES } from "@/content/stages";
 import { TRACKS } from "@/content/tracks";
-import { useBoot } from "@/lib/state/BootProvider";
+import { useBoot, type BootPhase } from "@/lib/state/BootProvider";
 import { useConsoleStore } from "@/lib/state/console";
 
 /** Counts shown in the preview panel. Only real content is counted. */
 const STAGE_COUNTS: Record<string, string> = {
   works: "—",
   sound: String(TRACKS.length),
-  visual: "—",
   thought: "—",
   about: "—",
 };
 
 export function StageMenu() {
-  const { booted, boot } = useBoot();
+  const { phase, booted, boot } = useBoot();
   const cursor = useConsoleStore((state) => state.cursor);
   const setCursor = useConsoleStore((state) => state.setCursor);
 
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const lockupRef = useRef<HTMLButtonElement | null>(null);
 
   /**
    * Move the selection and take the focus with it.
@@ -55,7 +55,7 @@ export function StageMenu() {
       if (!booted) {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          boot();
+          lockupRef.current?.click();
         }
         return;
       }
@@ -71,7 +71,7 @@ export function StageMenu() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [booted, boot, move]);
+  }, [booted, move]);
 
   // Entering the menu hands focus to the current row so the arrows work
   // without asking the visitor to click first.
@@ -87,7 +87,7 @@ export function StageMenu() {
   }, [booted]);
 
   if (!booted) {
-    return <TitleCard onStart={boot} />;
+    return <TitleCard ref={lockupRef} phase={phase} onStart={boot} />;
   }
 
   const selected = STAGES[cursor];
@@ -209,35 +209,59 @@ export function StageMenu() {
  * The title card. Shown once per session — returning from a stage drops the
  * visitor straight back into the menu rather than replaying the intro.
  *
- * The full lockup is the hero here: this is the one screen with room for the
- * wordmark and its tagline at a size where both are actually readable.
+ * On start it hands its own `<img>` to the WebGL layer, which samples the
+ * lockup's pixels and takes it apart. The DOM copy hides on the same frame, so
+ * the visitor sees one object coming undone rather than an image swap.
  */
-function TitleCard({ onStart }: { onStart: () => void }) {
+function TitleCard({
+  ref,
+  phase,
+  onStart,
+}: {
+  ref: React.Ref<HTMLButtonElement>;
+  phase: BootPhase;
+  onStart: (lockup: HTMLElement | null) => void;
+}) {
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const leaving = phase === "leaving";
+
   return (
     <>
       <button
+        ref={ref}
         type="button"
-        onClick={onStart}
+        onClick={() => onStart(imageRef.current)}
         className="grid flex-1 cursor-pointer place-content-center justify-items-center gap-10 px-4 text-center"
       >
-        <p className="font-mono text-[clamp(0.62rem,1.5vw,0.72rem)] tracking-[0.34em] text-ink-faint uppercase">
+        <p
+          className={[
+            "font-mono text-[clamp(0.62rem,1.5vw,0.72rem)] tracking-[0.34em] text-ink-faint uppercase",
+            "transition-opacity duration-300 ease-fluid",
+            leaving ? "opacity-0" : "opacity-100",
+          ].join(" ")}
+        >
           Frontend Engineer · Producer · Thinker
         </p>
 
-        {/* Same name as the HUD mark: on start, this lockup moves and shrinks
-            into the corner rather than cutting to a different screen. */}
-        <ViewTransition name="brand-lockup" share="brand-morph" default="none">
-          <Image
-            src="/brand/logo_grad.png"
-            alt="marocreate — Connect small, land thought"
-            width={1184}
-            height={203}
-            priority
-            className="h-auto w-[min(78vw,34rem)]"
-          />
-        </ViewTransition>
+        {/* No transition on the way out: the particles pick up in the exact
+            frame this goes, and a fade here would show both at once. */}
+        <Image
+          ref={imageRef}
+          src="/brand/logo_grad.png"
+          alt="marocreate — Connect small, land thought"
+          width={1184}
+          height={203}
+          priority
+          className={leaving ? "h-auto w-[min(78vw,34rem)] opacity-0" : "h-auto w-[min(78vw,34rem)]"}
+        />
 
-        <p className="animate-pulse font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase">
+        <p
+          className={[
+            "font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase",
+            "transition-opacity duration-300 ease-fluid",
+            leaving ? "opacity-0" : "animate-pulse opacity-100",
+          ].join(" ")}
+        >
           Press Enter / Click to start
         </p>
       </button>

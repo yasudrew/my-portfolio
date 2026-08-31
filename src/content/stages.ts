@@ -8,7 +8,7 @@ import { z } from "zod";
  * `app/<id>/page.tsx`; nothing else needs to know the list.
  */
 export const stageSchema = z.object({
-  id: z.enum(["works", "sound", "visual", "thought", "about"]),
+  id: z.enum(["works", "sound", "thought", "about"]),
   label: z.string(),
   jp: z.string(),
   lede: z.string(),
@@ -36,14 +36,6 @@ const RAW: readonly Stage[] = [
     lede: "プロデュース、トラック制作、サウンドデザイン。ここでは再生が主役になります。",
     action: "Play",
     tags: ["Production", "Sound design"],
-  },
-  {
-    id: "visual",
-    label: "Visual",
-    jp: "ビジュアル",
-    lede: "グラフィック、モーション、キャラクター。唯一、画像そのものを主役にしてよい場所です。",
-    action: "View",
-    tags: ["Graphic", "Motion", "Character"],
   },
   {
     id: "thought",

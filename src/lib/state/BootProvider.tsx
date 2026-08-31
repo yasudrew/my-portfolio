@@ -2,41 +2,66 @@
 
 import {
   createContext,
-  startTransition,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
+import { triggerDisperse } from "@/gl/logoDisperse";
+
+/**
+ * `title`   — the closed door: lockup and prompt, nothing else
+ * `leaving` — the lockup has been handed to the particle layer and is coming
+ *             apart; the DOM copy is already hidden
+ * `console` — the menu, with the HUD in place
+ */
+export type BootPhase = "title" | "leaving" | "console";
+
+/** How long the menu waits before arriving, in ms. Overlaps the dispersal. */
+const HANDOFF_MS = 620;
+
 type BootValue = {
-  /** false while the title card is up */
+  phase: BootPhase;
+  /** convenience: the console is up */
   booted: boolean;
-  boot: () => void;
+  /** hand the lockup element over and start the sequence */
+  boot: (lockup: HTMLElement | null) => void;
 };
 
 const BootContext = createContext<BootValue | null>(null);
 
 /**
- * Holds the one piece of state that has to be React's own.
+ * Owns the opening sequence.
  *
- * `<ViewTransition>` only animates updates that happen inside a Transition, and
- * only React state qualifies — an external store (zustand, and anything else
- * behind `useSyncExternalStore`) commits synchronously, so wrapping its setter
- * in `startTransition` does nothing. Booting the console is exactly the moment
- * we need a shared-element morph for, so it lives here instead.
- *
- * Mounted in the root layout, which persists across navigation: leaving a stage
- * and coming back does not replay the intro.
+ * Deliberately React state rather than the zustand store: the phase drives
+ * mounting, and mixing it into an external store would put a render-affecting
+ * value outside React's control for no benefit. Mounted in the root layout,
+ * which persists across navigation — leaving a stage and coming back does not
+ * replay the intro.
  */
 export function BootProvider({ children }: { children: React.ReactNode }) {
-  const [booted, setBooted] = useState(false);
+  const [phase, setPhase] = useState<BootPhase>("title");
+  const timer = useRef<number | undefined>(undefined);
 
-  const boot = useCallback(() => {
-    startTransition(() => setBooted(true));
+  const boot = useCallback((lockup: HTMLElement | null) => {
+    // Capture where the logo is *now*: the particle layer needs the same box
+    // the visitor just clicked, and the DOM copy disappears on the next frame.
+    if (lockup) triggerDisperse(lockup);
+    setPhase("leaving");
+
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setPhase("console"), HANDOFF_MS);
   }, []);
 
-  const value = useMemo(() => ({ booted, boot }), [booted, boot]);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const value = useMemo(
+    () => ({ phase, booted: phase === "console", boot }),
+    [phase, boot],
+  );
 
   return <BootContext.Provider value={value}>{children}</BootContext.Provider>;
 }

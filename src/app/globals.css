@@ -244,16 +244,21 @@ html.lenis body {
 
 /* ==========================================================================
    Starting the console
-   The lockup is a shared element between the title card and the HUD, so
-   stepping in moves the logo to the corner instead of cutting between two
-   screens. Everything else arrives just behind it, in list order.
+   The lockup comes apart in the WebGL layer; the frame simply arrives.
    ========================================================================== */
-::view-transition-group(.brand-morph) {
-  animation-duration: 560ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+@keyframes hud-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-::view-transition-image-pair(.brand-morph) {
-  animation-name: vt-morph-blur;
+
+.hud-in {
+  animation: hud-in 520ms var(--ease-fluid) 60ms both;
 }
 
 @keyframes stage-in {
@@ -272,7 +277,8 @@ html.lenis body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stage-in {
+  .stage-in,
+  .hud-in {
     animation: none;
   }
 }

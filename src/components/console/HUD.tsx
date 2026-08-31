@@ -1,6 +1,5 @@
 "use client";
 
-import { ViewTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,9 +25,10 @@ export function HUD() {
   // The frame appears only once the visitor has stepped through it.
   if (pathname === "/" && !booted) return null;
 
+
   return (
     <header
-      className="flex items-center justify-between gap-4 px-4 py-4 md:px-9"
+      className="hud-in flex items-center justify-between gap-4 px-4 py-4 md:px-9"
       style={{ viewTransitionName: "site-hud" }}
     >
       <Link
@@ -36,20 +36,15 @@ export function HUD() {
         transitionTypes={["nav-back"]}
         className="group flex items-center gap-3"
       >
-        {/* Shares its name with the title card's full lockup, so starting the
-            console moves the logo from the centre of the screen into this
-            corner instead of swapping one image for another. At 24px the
-            tagline would be unreadable, hence the mark alone. */}
-        <ViewTransition name="brand-lockup" share="brand-morph" default="none">
-          <Image
-            src="/brand/logo-mark.png"
-            alt=""
-            width={219}
-            height={203}
-            priority
-            className="h-6 w-auto shrink-0 opacity-90 transition-opacity duration-200 group-hover:opacity-100"
-          />
-        </ViewTransition>
+        {/* the mark alone: at 24px the full lockup's tagline is unreadable */}
+        <Image
+          src="/brand/logo-mark.png"
+          alt=""
+          width={219}
+          height={203}
+          priority
+          className="h-6 w-auto shrink-0 opacity-90 transition-opacity duration-200 group-hover:opacity-100"
+        />
         {/* the brand name, set lowercase as the logo does */}
         <span className="text-[0.95rem] font-normal tracking-tight text-ink lowercase">
           marocreate

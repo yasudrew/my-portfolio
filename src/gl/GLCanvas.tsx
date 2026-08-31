@@ -6,6 +6,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { registerAdvance } from "@/gl/frameloop";
 import { setRenderer } from "@/gl/renderer";
 import { LatticeField } from "@/gl/scenes/LatticeField";
+import { LogoDisperse } from "@/gl/scenes/LogoDisperse";
 import { budgetFor } from "@/lib/quality/detect";
 import { useAppStore } from "@/lib/state/store";
 
@@ -64,6 +65,7 @@ export function GLCanvas() {
       >
         <FrameDriver />
         <LatticeField />
+        <LogoDisperse src="/brand/logo_grad.png" />
       </Canvas>
     </div>
   );
