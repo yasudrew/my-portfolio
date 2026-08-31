@@ -15,12 +15,39 @@ import {
   type Stage,
   type StageId,
 } from "@/content/stages";
-import { TRACKS } from "@/content/tracks";
+import { formatDuration, TRACKS } from "@/content/tracks";
 import { useBoot, type BootPhase } from "@/lib/state/BootProvider";
 import { useConsoleStore } from "@/lib/state/console";
 
 /** Entry counts shown beside each stage. Only real content is counted. */
 const COUNTS: Partial<Record<StageId, number>> = { sound: TRACKS.length };
+
+type PreviewItem = { label: string; meta?: string; real: boolean };
+
+/**
+ * A glimpse of what a stage holds.
+ *
+ * Without this the board is four words and a lot of dark space — the visitor
+ * has to open a stage to find out whether anything is in it. Real entries are
+ * listed by name; a stage that has none yet shows the kinds of thing it is for,
+ * dimmed, so the difference between "full" and "waiting" is visible at a glance
+ * rather than hidden behind a click.
+ */
+function previewItems(stage: Stage): readonly PreviewItem[] {
+  if (stage.id === "sound") {
+    const shown = TRACKS.slice(0, 4).map((track) => ({
+      label: track.title,
+      meta: formatDuration(track.duration),
+      real: true,
+    }));
+    const rest = TRACKS.length - shown.length;
+    return rest > 0
+      ? [...shown, { label: `ほか${rest}曲`, real: true }]
+      : shown;
+  }
+
+  return stage.holds.map((held) => ({ label: held, real: false }));
+}
 
 /**
  * Move keyboard focus to a stage.
@@ -123,9 +150,9 @@ export function StageMenu() {
 
   return (
     <>
-      <div className="grid min-h-0 flex-1 content-center gap-8 overflow-y-auto px-4 py-4 md:px-9 lg:gap-10">
+      <div className="grid min-h-0 flex-1 content-center gap-6 overflow-y-auto px-4 py-4 md:px-9 lg:gap-8">
         {/* the two sides */}
-        <div className="mx-auto grid w-full max-w-4xl gap-6 sm:grid-cols-2 sm:gap-10">
+        <div className="mx-auto grid w-full max-w-4xl gap-6 sm:grid-cols-2 sm:gap-8">
           <StageColumn
             stage={engineering}
             group="engineering"
@@ -178,6 +205,9 @@ export function StageMenu() {
             </span>
             <span className="font-mono text-[0.66rem] tracking-[0.1em] text-ink-faint">
               {foundation.jp}
+            </span>
+            <span className="font-mono text-[0.62rem] tracking-[0.14em] text-edge uppercase">
+              {foundation.holds.join(" · ")}
             </span>
           </Link>
         </div>
@@ -271,7 +301,30 @@ function StageColumn({
       <span className="font-mono text-[0.66rem] tracking-[0.14em] text-ink-faint">
         {heading.jp}
       </span>
+
+      <StagePreviewList items={previewItems(stage)} />
     </Link>
+  );
+}
+
+/** The contents glimpse under a stage name. */
+function StagePreviewList({ items }: { items: readonly PreviewItem[] }) {
+  return (
+    <ul className="mt-1 grid gap-1.5 border-t border-edge-soft pt-3">
+      {items.map((item) => (
+        <li
+          key={item.label}
+          className="flex items-baseline justify-between gap-3 font-mono text-[0.68rem] tracking-[0.04em]"
+        >
+          <span className={item.real ? "text-ink-dim" : "text-edge"}>
+            {item.real ? item.label : item.label.toUpperCase()}
+          </span>
+          {item.meta ? (
+            <span className="text-ink-faint tabular-nums">{item.meta}</span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -319,19 +372,15 @@ function TitleCard({
           }
         />
 
-        <div
+        <p
           className={[
-            "grid gap-6 transition-opacity duration-300 ease-fluid",
-            leaving ? "opacity-0" : "opacity-100",
+            "font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase",
+            "transition-opacity duration-300 ease-fluid",
+            leaving ? "opacity-0" : "animate-pulse opacity-100",
           ].join(" ")}
         >
-          <p className="text-[clamp(0.95rem,2.2vw,1.15rem)] font-light text-ink-dim">
-            機能のために、表現のために。
-          </p>
-          <p className="animate-pulse font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase">
-            Press Enter / Click to start
-          </p>
-        </div>
+          Press Enter / Click to start
+        </p>
       </button>
 
       <KeyGuide guides={[{ key: "Enter", label: "Start" }]} />

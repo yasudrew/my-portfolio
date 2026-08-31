@@ -28,6 +28,14 @@ export const stageSchema = z.object({
   /** the verb on each card in this stage — what the visitor is invited to do */
   action: z.string(),
   tags: z.array(z.string()).min(1),
+  /**
+   * The kinds of thing this stage is for, in the order they should appear.
+   *
+   * Doubles as the slot list inside the stage, so the board's glimpse and the
+   * stage itself can never drift apart. Once real entries exist they replace
+   * these; until then they are what tells a visitor what the section is *for*.
+   */
+  holds: z.array(z.string()).min(1),
 });
 
 export type Stage = z.infer<typeof stageSchema>;
@@ -43,6 +51,13 @@ const RAW: readonly Stage[] = [
     lede: "機能を果たすためにつくったもの。課題があり、手段を選び、結果が出た記録です。Webサイト、アプリケーション、社内ツール。",
     action: "Open",
     tags: ["Web", "App", "Tool"],
+    holds: [
+      "Web site",
+      "Web application",
+      "Internal tool",
+      "Client work",
+      "Experiment",
+    ],
   },
   {
     id: "sound",
@@ -52,6 +67,7 @@ const RAW: readonly Stage[] = [
     lede: "表現のためにつくったもの。用途はなく、鳴っていること自体が目的です。ここでは再生が主役になります。",
     action: "Play",
     tags: ["Production", "Sound design"],
+    holds: ["Track", "Sound design", "Collaboration"],
   },
   {
     id: "thought",
@@ -61,6 +77,7 @@ const RAW: readonly Stage[] = [
     lede: "機能と表現、その両方の根にあるもの。なぜつくるのか、つくることで何が起きるのかについての記述。",
     action: "Read",
     tags: ["Essay", "Note"],
+    holds: ["Essay", "Note", "Reading"],
   },
   {
     id: "about",
@@ -70,6 +87,7 @@ const RAW: readonly Stage[] = [
     lede: "経歴、できること、大事にしていること。仕事の相談先としての情報もここに。",
     action: "Open",
     tags: ["Profile", "Contact"],
+    holds: ["Profile", "Skills", "Contact"],
   },
 ];
 
