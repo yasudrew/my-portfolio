@@ -1,9 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { LogoMark } from "@/components/brand/Logo";
 import { stageById } from "@/content/stages";
 
 /**
@@ -29,7 +29,16 @@ export function HUD() {
         transitionTypes={["nav-back"]}
         className="group flex items-center gap-3"
       >
-        <LogoMark className="size-6 shrink-0 text-blue-lit transition-colors duration-200 group-hover:text-ink" />
+        {/* the knocked-out mark alone: at 24px the full lockup's tagline is
+            unreadable, so the wordmark belongs on the title card instead */}
+        <Image
+          src="/brand/logo-mark.png"
+          alt=""
+          width={219}
+          height={203}
+          priority
+          className="h-6 w-auto shrink-0 opacity-90 transition-opacity duration-200 group-hover:opacity-100"
+        />
         <span className="text-[0.95rem] font-normal tracking-tight text-ink">
           Yasuhiko Kawamura
         </span>

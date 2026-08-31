@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, ViewTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { HummingMonster } from "@/components/console/HummingMonster";
@@ -170,7 +171,7 @@ export function StageMenu() {
               replays its animation without any state living up here */}
           <HummingMonster
             key={cursor}
-            className="guide-perk pointer-events-none absolute right-3 bottom-2 w-[clamp(72px,12vw,108px)] text-amber md:right-5 md:bottom-4"
+            className="guide-perk pointer-events-none absolute right-0 bottom-1 w-[clamp(104px,16vw,164px)] text-amber md:right-2 md:bottom-2"
           />
         </aside>
       </div>
@@ -188,6 +189,9 @@ export function StageMenu() {
 /**
  * The title card. Shown once per session — returning from a stage drops the
  * visitor straight back into the menu rather than replaying the intro.
+ *
+ * The full lockup is the hero here: this is the one screen with room for the
+ * wordmark and its tagline at a size where both are actually readable.
  */
 function TitleCard({ onStart }: { onStart: () => void }) {
   return (
@@ -195,18 +199,22 @@ function TitleCard({ onStart }: { onStart: () => void }) {
       <button
         type="button"
         onClick={onStart}
-        className="grid flex-1 cursor-pointer place-content-center px-4 text-center"
+        className="grid flex-1 cursor-pointer place-content-center justify-items-center gap-10 px-4 text-center"
       >
-        <p className="mb-6 font-mono text-[clamp(0.62rem,1.5vw,0.72rem)] tracking-[0.34em] text-ink-faint uppercase">
+        <p className="font-mono text-[clamp(0.62rem,1.5vw,0.72rem)] tracking-[0.34em] text-ink-faint uppercase">
           Frontend Engineer · Producer · Thinker
         </p>
-        <h1 className="bg-gradient-to-br from-blue via-blue-lit to-[#cfe0ff] bg-clip-text text-[clamp(2.6rem,9vw,6.5rem)] leading-[0.95] font-extralight tracking-[-0.035em] text-transparent">
-          Portfolio
-        </h1>
-        <p className="mt-6 text-[clamp(0.9rem,2vw,1.05rem)] font-light text-ink-dim">
-          つくったものを、選んで開く。
-        </p>
-        <p className="mt-12 animate-pulse font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase">
+
+        <Image
+          src="/brand/logo_grad.png"
+          alt="marocreate — Connect small, land thought"
+          width={1184}
+          height={203}
+          priority
+          className="h-auto w-[min(78vw,34rem)]"
+        />
+
+        <p className="animate-pulse font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase">
           Press Enter / Click to start
         </p>
       </button>
