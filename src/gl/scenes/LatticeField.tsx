@@ -130,9 +130,10 @@ export function LatticeField() {
   const target = useRef(0.6);
   useEffect(() => {
     const BAND: Record<StageId, number> = {
-      works: 0.62,
-      sound: 0.62,
-      thought: 0.4,
+      work: 0.64,
+      sound: 0.34,
+      lab: 0.34,
+      thought: 0.34,
       about: 0.5,
     };
     target.current = BAND[cursor];

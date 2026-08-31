@@ -4,13 +4,13 @@ import { StageCard } from "@/components/console/StageCard";
 import { StageScreen } from "@/components/console/StageScreen";
 import { stageById } from "@/content/stages";
 
-export const metadata: Metadata = { title: "Works" };
+export const metadata: Metadata = { title: "Work" };
 
-export default function WorksPage() {
-  const stage = stageById("works")!;
+export default function WorkPage() {
+  const stage = stageById("work")!;
 
   return (
-    <StageScreen id="works">
+    <StageScreen id="work">
       <div className="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] content-start gap-3.5">
         {stage.holds.map((name, index) => (
           <StageCard
