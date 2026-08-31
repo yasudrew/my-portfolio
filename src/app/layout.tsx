@@ -5,6 +5,7 @@ import { HUD } from "@/components/console/HUD";
 import { DebugHUD } from "@/components/DebugHUD";
 import { GLCanvas } from "@/gl/GLCanvas";
 import { FrameLoopProvider } from "@/lib/loop/FrameLoopProvider";
+import { BootProvider } from "@/lib/state/BootProvider";
 
 import "./globals.css";
 
@@ -55,12 +56,14 @@ export default function RootLayout({
         </a>
         <FrameLoopProvider />
         <GLCanvas />
-        <div className="relative flex min-h-svh flex-col">
-          <HUD />
-          <main id="main" className="flex min-h-0 flex-1 flex-col">
-            {children}
-          </main>
-        </div>
+        <BootProvider>
+          <div className="relative flex min-h-svh flex-col">
+            <HUD />
+            <main id="main" className="flex min-h-0 flex-1 flex-col">
+              {children}
+            </main>
+          </div>
+        </BootProvider>
         <DebugHUD />
       </body>
     </html>

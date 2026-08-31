@@ -1,10 +1,12 @@
 "use client";
 
+import { ViewTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { stageById } from "@/content/stages";
+import { useBoot } from "@/lib/state/BootProvider";
 
 /**
  * The fixed frame around every screen.
@@ -16,8 +18,13 @@ import { stageById } from "@/content/stages";
  */
 export function HUD() {
   const pathname = usePathname();
+  const { booted } = useBoot();
   const segment = pathname.split("/")[1] ?? "";
   const stage = stageById(segment);
+
+  // The title card is a closed door: nothing but the lockup and the prompt.
+  // The frame appears only once the visitor has stepped through it.
+  if (pathname === "/" && !booted) return null;
 
   return (
     <header
@@ -29,16 +36,20 @@ export function HUD() {
         transitionTypes={["nav-back"]}
         className="group flex items-center gap-3"
       >
-        {/* the knocked-out mark alone: at 24px the full lockup's tagline is
-            unreadable, so the wordmark belongs on the title card instead */}
-        <Image
-          src="/brand/logo-mark.png"
-          alt=""
-          width={219}
-          height={203}
-          priority
-          className="h-6 w-auto shrink-0 opacity-90 transition-opacity duration-200 group-hover:opacity-100"
-        />
+        {/* Shares its name with the title card's full lockup, so starting the
+            console moves the logo from the centre of the screen into this
+            corner instead of swapping one image for another. At 24px the
+            tagline would be unreadable, hence the mark alone. */}
+        <ViewTransition name="brand-lockup" share="brand-morph" default="none">
+          <Image
+            src="/brand/logo-mark.png"
+            alt=""
+            width={219}
+            height={203}
+            priority
+            className="h-6 w-auto shrink-0 opacity-90 transition-opacity duration-200 group-hover:opacity-100"
+          />
+        </ViewTransition>
         {/* the brand name, set lowercase as the logo does */}
         <span className="text-[0.95rem] font-normal tracking-tight text-ink lowercase">
           marocreate

@@ -8,6 +8,7 @@ import { HummingMonster } from "@/components/console/HummingMonster";
 import { KeyGuide } from "@/components/console/KeyGuide";
 import { STAGES } from "@/content/stages";
 import { TRACKS } from "@/content/tracks";
+import { useBoot } from "@/lib/state/BootProvider";
 import { useConsoleStore } from "@/lib/state/console";
 
 /** Counts shown in the preview panel. Only real content is counted. */
@@ -20,20 +21,33 @@ const STAGE_COUNTS: Record<string, string> = {
 };
 
 export function StageMenu() {
-  const booted = useConsoleStore((state) => state.booted);
-  const boot = useConsoleStore((state) => state.boot);
+  const { booted, boot } = useBoot();
   const cursor = useConsoleStore((state) => state.cursor);
   const setCursor = useConsoleStore((state) => state.setCursor);
 
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
-  const move = useCallback(
-    (delta: number, focus: boolean) => {
-      const next = (cursor + delta + STAGES.length) % STAGES.length;
-      setCursor(next);
-      if (focus) itemRefs.current[next]?.focus({ preventScroll: true });
+  /**
+   * Move the selection and take the focus with it.
+   *
+   * These two must never disagree: if hovering moves the highlight but leaves
+   * the focus behind, the next arrow key jumps from a row the visitor was not
+   * looking at. Since they always match, the selection styling *is* the focus
+   * indicator, which is why the rows suppress their own focus ring.
+   */
+  const selectAt = useCallback(
+    (index: number) => {
+      setCursor(index);
+      itemRefs.current[index]?.focus({ preventScroll: true });
     },
-    [cursor, setCursor],
+    [setCursor],
+  );
+
+  const move = useCallback(
+    (delta: number) => {
+      selectAt((cursor + delta + STAGES.length) % STAGES.length);
+    },
+    [cursor, selectAt],
   );
 
   useEffect(() => {
@@ -48,7 +62,7 @@ export function StageMenu() {
 
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault();
-        move(event.key === "ArrowDown" ? 1 : -1, true);
+        move(event.key === "ArrowDown" ? 1 : -1);
       }
       // Enter is deliberately not handled: the stage rows are real links, so
       // the browser already activates the focused one. Reimplementing it here
@@ -92,11 +106,13 @@ export function StageMenu() {
                   ref={(node) => {
                     itemRefs.current[index] = node;
                   }}
-                  onPointerEnter={() => setCursor(index)}
+                  onPointerEnter={() => selectAt(index)}
                   onFocus={() => setCursor(index)}
                   aria-current={isSelected ? "true" : undefined}
+                  style={{ animationDelay: `${index * 55}ms` }}
                   className={[
-                    "grid grid-cols-[2.6rem_1fr_auto] items-baseline gap-4 border-l-2 py-2 pr-4 pl-4",
+                    "stage-in grid grid-cols-[2.6rem_1fr_auto] items-baseline gap-4 border-l-2 py-2 pr-4 pl-4",
+                    "focus-visible:outline-none",
                     "transition-[color,border-color,background,padding] duration-200 ease-fluid",
                     isSelected
                       ? "border-amber bg-gradient-to-r from-blue/15 to-transparent to-70% pl-6 text-ink"
@@ -138,7 +154,10 @@ export function StageMenu() {
           })}
         </ul>
 
-        <aside className="relative grid min-h-[clamp(12rem,34vh,19rem)] content-between gap-6 overflow-hidden rounded-sm border border-edge-soft bg-gradient-to-br from-surface-lift/80 to-ground/70 p-5 md:p-8">
+        <aside
+          style={{ animationDelay: `${STAGES.length * 55 + 40}ms` }}
+          className="stage-in relative grid min-h-[clamp(12rem,34vh,19rem)] content-between gap-6 overflow-hidden rounded-sm border border-edge-soft bg-gradient-to-br from-surface-lift/80 to-ground/70 p-5 md:p-8"
+        >
           <div className="flex gap-6 font-mono text-[0.66rem] tracking-[0.14em] text-ink-faint uppercase">
             <div>
               Entries
@@ -205,14 +224,18 @@ function TitleCard({ onStart }: { onStart: () => void }) {
           Frontend Engineer · Producer · Thinker
         </p>
 
-        <Image
-          src="/brand/logo_grad.png"
-          alt="marocreate — Connect small, land thought"
-          width={1184}
-          height={203}
-          priority
-          className="h-auto w-[min(78vw,34rem)]"
-        />
+        {/* Same name as the HUD mark: on start, this lockup moves and shrinks
+            into the corner rather than cutting to a different screen. */}
+        <ViewTransition name="brand-lockup" share="brand-morph" default="none">
+          <Image
+            src="/brand/logo_grad.png"
+            alt="marocreate — Connect small, land thought"
+            width={1184}
+            height={203}
+            priority
+            className="h-auto w-[min(78vw,34rem)]"
+          />
+        </ViewTransition>
 
         <p className="animate-pulse font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase">
           Press Enter / Click to start

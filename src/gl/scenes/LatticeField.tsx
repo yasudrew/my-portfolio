@@ -47,11 +47,13 @@ const FRAGMENT = glsl`
     // radial well around the cursor
     vec2 toPointer = px - uPointer * uResolution;
     float dist = length(toPointer);
-    float radius = min(uResolution.x, uResolution.y) * 0.34;
+    float radius = min(uResolution.x, uResolution.y) * 0.42;
     float well = max(0.0, 1.0 - dist / radius);
-    well = well * well * uPointerIn;
+    // cubed rather than squared: the falloff starts later and stays soft,
+    // so the cursor suggests the lattice instead of shoving it
+    well = well * well * well * uPointerIn;
 
-    vec2 displaced = px + normalize(toPointer + vec2(1e-4)) * well * 11.0;
+    vec2 displaced = px + normalize(toPointer + vec2(1e-4)) * well * 5.0;
 
     // slow ambient drift so a still cursor is not a still image
     displaced.y += sin(uTime * 0.5 + displaced.x * 0.018) * 1.1;
@@ -63,10 +65,10 @@ const FRAGMENT = glsl`
     // one dot per lattice cell
     vec2 cell = fract(displaced / uSpacing) - 0.5;
     float toCentre = length(cell) * uSpacing;
-    float size = 1.05 + band * 0.55 + well * 1.7;
+    float size = 1.05 + band * 0.55 + well * 0.85;
     float dot = 1.0 - smoothstep(size - 0.9, size + 0.4, toCentre);
 
-    float alpha = 0.075 + band * 0.26 + well * 0.45;
+    float alpha = 0.075 + band * 0.26 + well * 0.22;
     vec3 color = mix(uBase, uLit, clamp(well * 2.0, 0.0, 1.0));
 
     float a = dot * min(0.8, alpha);
@@ -119,6 +121,10 @@ export function LatticeField() {
     uniforms.uSpacing.value = size.width < 640 ? 34 : 44;
   }, [size.width, size.height, uniforms]);
 
+  // The lattice trails the cursor rather than tracking it: an instant response
+  // reads as twitchy, a lagged one reads as weight.
+  const smoothPointer = useRef(new THREE.Vector2(0.5, 0.5));
+
   // The band is the only part of the background that knows about the menu.
   const target = useRef(0.5);
   useEffect(() => {
@@ -136,8 +142,12 @@ export function LatticeField() {
     uniforms.uBand.value += (target.current - uniforms.uBand.value) * Math.min(1, dt * 4);
 
     const wanted = pointer.active && !reducedMotion ? 1 : 0;
-    uniforms.uPointerIn.value += (wanted - uniforms.uPointerIn.value) * Math.min(1, dt * 5);
-    uniforms.uPointer.value.set(pointer.ux, 1 - pointer.uy);
+    uniforms.uPointerIn.value += (wanted - uniforms.uPointerIn.value) * Math.min(1, dt * 3);
+
+    const follow = Math.min(1, dt * 2.6);
+    smoothPointer.current.x += (pointer.ux - smoothPointer.current.x) * follow;
+    smoothPointer.current.y += (1 - pointer.uy - smoothPointer.current.y) * follow;
+    uniforms.uPointer.value.copy(smoothPointer.current);
   });
 
   // quality only affects DPR here, which the canvas owns; nothing to do per tier
