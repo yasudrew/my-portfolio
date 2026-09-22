@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ViewTransition } from "react";
 
+import { Shot } from "@/components/console/WorkList";
 import { WORKS, workBySlug } from "@/content/works";
 
 type Params = { slug: string };
@@ -36,10 +37,6 @@ export default async function WorkDetailPage({
   const work = workBySlug(slug);
   if (!work) notFound();
 
-  const related = WORKS.filter(
-    (other) => other.designer === work.designer && other.slug !== work.slug,
-  );
-
   return (
     <ViewTransition
       enter={{ "nav-forward": "nav-forward", "nav-back": "nav-back", default: "none" }}
@@ -55,7 +52,7 @@ export default async function WorkDetailPage({
           ← Work
         </Link>
 
-        <header className="mt-8 grid gap-4 border-b border-edge-soft pb-8">
+        <header className="mt-8 grid gap-4">
           <h1 className="text-[clamp(2rem,5.5vw,3.2rem)] leading-none font-extralight tracking-[-0.03em]">
             {work.title}
           </h1>
@@ -69,6 +66,15 @@ export default async function WorkDetailPage({
             {work.url.replace(/^https?:\/\//, "")} ↗
           </a>
         </header>
+
+        <a
+          href={work.url}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="mt-8 block overflow-hidden rounded-sm border border-edge-soft transition-colors duration-200 hover:border-blue-deep"
+        >
+          <Shot work={work} sizes="(min-width: 768px) 48rem, 92vw" priority />
+        </a>
 
         <dl className="grid gap-6 border-b border-edge-soft py-8 sm:grid-cols-2">
           <Field label="Design" value={work.designer} />
@@ -96,25 +102,6 @@ export default async function WorkDetailPage({
           </section>
         ) : null}
 
-        {related.length > 0 ? (
-          <section className="py-8">
-            <h2 className="font-mono text-[0.66rem] tracking-[0.16em] text-ink-faint uppercase">
-              {work.designer} との他の仕事
-            </h2>
-            <ul className="mt-4 grid gap-2">
-              {related.map((other) => (
-                <li key={other.slug}>
-                  <Link
-                    href={`/work/${other.slug}`}
-                    className="text-[1.05rem] font-light text-ink-dim transition-colors duration-200 hover:text-ink"
-                  >
-                    {other.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
       </article>
     </ViewTransition>
   );

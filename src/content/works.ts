@@ -4,10 +4,9 @@ import { z } from "zod";
  * Paid client work.
  *
  * The flow is client → designer → here: the design arrives as a comp, and the
- * build, the setup and the CMS are this side of the line. That shape decides
- * what a reader needs to see, so `designer` is required rather than optional —
- * the same names recurring across entries is the strongest thing these five
- * pieces say, and it only shows if every entry carries one.
+ * build, the setup and the CMS are this side of the line. `designer` is
+ * required because the credit belongs on every entry, not because anything is
+ * counted from it.
  *
  * Two tiers on purpose. Everything up to `motion` is quick enough to fill in
  * for every job as it ships; `story` is the expensive part and is reserved for
@@ -34,6 +33,14 @@ export const workSchema = z.object({
    * marks up a PSD". One sentence is enough; it just has to be concrete.
    */
   motion: z.string().optional(),
+  /**
+   * Hero shot of the live site, under `/public`.
+   *
+   * Optional because it cannot always be captured: a hero driven by WebGL
+   * renders as an empty frame in headless Chrome, and an empty frame is worse
+   * than no image. Entries without one fall back to a typographic card.
+   */
+  shot: z.string().optional(),
   /** the deep tier, for representative pieces only */
   story: z
     .object({
@@ -58,6 +65,7 @@ const RAW: readonly Work[] = [
     designer: "神岡真拓",
     role: DEFAULT_ROLE,
     stack: DEFAULT_STACK,
+    shot: "/works/ashigara-seiga.webp",
   },
   {
     slug: "alumnote",
@@ -66,6 +74,7 @@ const RAW: readonly Work[] = [
     designer: "高木康平",
     role: DEFAULT_ROLE,
     stack: DEFAULT_STACK,
+    shot: "/works/alumnote.webp",
   },
   {
     slug: "less-but-better",
@@ -82,6 +91,7 @@ const RAW: readonly Work[] = [
     designer: "高木康平",
     role: DEFAULT_ROLE,
     stack: DEFAULT_STACK,
+    shot: "/works/hitorigokochi.webp",
   },
   {
     slug: "yeahgo-shirakawa",
@@ -90,6 +100,7 @@ const RAW: readonly Work[] = [
     designer: "神岡真拓",
     role: DEFAULT_ROLE,
     stack: DEFAULT_STACK,
+    shot: "/works/yeahgo-shirakawa.webp",
   },
 ];
 
@@ -97,36 +108,4 @@ export const WORKS: readonly Work[] = RAW.map((work) => workSchema.parse(work));
 
 export function workBySlug(slug: string): Work | undefined {
   return WORKS.find((work) => work.slug === slug);
-}
-
-export type DesignerTally = {
-  designer: string;
-  count: number;
-};
-
-/**
- * How many pieces came from each designer, most first.
- *
- * Derived rather than written down so it cannot drift from the list. The
- * repeat count is the argument these entries make together, and it should
- * update itself the moment a sixth job lands.
- */
-export function designerTally(): readonly DesignerTally[] {
-  const counts = new Map<string, number>();
-  for (const work of WORKS) {
-    counts.set(work.designer, (counts.get(work.designer) ?? 0) + 1);
-  }
-  return [...counts.entries()]
-    .map(([designer, count]) => ({ designer, count }))
-    .sort((a, b) => b.count - a.count || a.designer.localeCompare(b.designer));
-}
-
-/** Pieces that came from a designer who has commissioned more than once. */
-export function repeatCount(): number {
-  const repeats = new Set(
-    designerTally()
-      .filter((entry) => entry.count > 1)
-      .map((entry) => entry.designer),
-  );
-  return WORKS.filter((work) => repeats.has(work.designer)).length;
 }

@@ -1,63 +1,23 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { designerTally, repeatCount, WORKS } from "@/content/works";
+import { WORKS, type Work } from "@/content/works";
 
 /**
  * The client work.
  *
- * Opens with the repeat count rather than with the list, because that is the
- * fact a designer reading this actually wants: not "he has built five sites"
- * but "four of them came back for a second one". The list underneath is
- * ordered as given, and every row names its designer so the recurrence is
- * visible without being claimed.
+ * Screenshot-led, because these are websites: what they look like is the first
+ * thing anyone judges, and a row of titles asks the reader to take that on
+ * faith. Each card carries both destinations — the case study and the live
+ * site — since a designer reading this usually wants the real thing.
  */
 export function WorkList() {
-  const tally = designerTally();
-  const repeats = repeatCount();
-
   return (
     <div className="grid gap-8">
-      <dl className="flex flex-wrap gap-x-10 gap-y-4 border-b border-edge-soft pb-6">
-        <Stat label="Projects" value={String(WORKS.length).padStart(2, "0")} />
-        <Stat label="Designers" value={String(tally.length).padStart(2, "0")} />
-        <Stat
-          label="Repeat"
-          value={String(repeats).padStart(2, "0")}
-          note={`${tally.length}人中${tally.filter((t) => t.count > 1).length}人がリピート`}
-        />
-      </dl>
-
-      <ul className="grid gap-px overflow-hidden rounded-sm border border-edge-soft bg-edge-soft">
+      <ul className="grid gap-5 sm:grid-cols-2">
         {WORKS.map((work) => (
-          <li key={work.slug} className="bg-ground">
-            <Link
-              href={`/work/${work.slug}`}
-              transitionTypes={["nav-forward"]}
-              className="grid gap-3 px-4 py-5 transition-colors duration-200 hover:bg-surface/70 sm:grid-cols-[1fr_auto] sm:items-center sm:gap-6"
-            >
-              <span className="grid gap-1.5">
-                <span className="text-[1.15rem] leading-tight font-light tracking-tight text-ink">
-                  {work.title}
-                </span>
-                <span className="font-mono text-[0.64rem] tracking-[0.1em] text-ink-faint">
-                  Design — {work.designer}
-                </span>
-              </span>
-
-              <span className="flex flex-wrap items-center gap-2">
-                {work.stack.slice(0, 3).map((tech) => (
-                  <span
-                    key={tech}
-                    className="rounded-full border border-edge px-2.5 py-0.5 font-mono text-[0.6rem] tracking-[0.08em] text-ink-faint"
-                  >
-                    {tech}
-                  </span>
-                ))}
-                <span className="ml-1 font-mono text-[0.62rem] tracking-[0.12em] text-blue-lit uppercase">
-                  Open →
-                </span>
-              </span>
-            </Link>
+          <li key={work.slug}>
+            <WorkCard work={work} />
           </li>
         ))}
       </ul>
@@ -70,30 +30,82 @@ export function WorkList() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  note,
-}: {
-  label: string;
-  value: string;
-  note?: string;
-}) {
+function WorkCard({ work }: { work: Work }) {
   return (
-    <div className="grid gap-1">
-      <dt className="font-mono text-[0.62rem] tracking-[0.16em] text-ink-faint uppercase">
-        {label}
-      </dt>
-      <dd className="grid gap-1">
-        <span className="text-2xl leading-none font-light tracking-tight text-blue-lit tabular-nums">
-          {value}
-        </span>
-        {note ? (
-          <span className="font-mono text-[0.6rem] tracking-[0.08em] text-edge">
-            {note}
+    <article className="group grid gap-3">
+      <Link
+        href={`/work/${work.slug}`}
+        transitionTypes={["nav-forward"]}
+        className="block overflow-hidden rounded-sm border border-edge-soft bg-surface/50 transition-colors duration-200 hover:border-blue-deep"
+      >
+        <Shot work={work} sizes="(min-width: 640px) 45vw, 92vw" />
+      </Link>
+
+      <div className="flex items-baseline justify-between gap-3">
+        <Link
+          href={`/work/${work.slug}`}
+          transitionTypes={["nav-forward"]}
+          className="grid gap-1"
+        >
+          <span className="text-[1.05rem] leading-tight font-light tracking-tight text-ink transition-colors duration-200 group-hover:text-blue-lit">
+            {work.title}
           </span>
-        ) : null}
-      </dd>
-    </div>
+          <span className="font-mono text-[0.62rem] tracking-[0.1em] text-ink-faint">
+            Design — {work.designer}
+          </span>
+        </Link>
+
+        <a
+          href={work.url}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="shrink-0 font-mono text-[0.62rem] tracking-[0.12em] text-ink-faint uppercase transition-colors duration-200 hover:text-blue-lit"
+        >
+          Live ↗
+        </a>
+      </div>
+    </article>
+  );
+}
+
+/**
+ * The hero image, or a stand-in built from the title.
+ *
+ * The fallback is deliberately not a grey box: a site with no capture yet still
+ * has a name, and setting it in the page's own type keeps the grid even instead
+ * of leaving a hole where a card should be.
+ */
+export function Shot({
+  work,
+  sizes,
+  priority = false,
+}: {
+  work: Work;
+  sizes: string;
+  priority?: boolean;
+}) {
+  if (!work.shot) {
+    return (
+      <div className="grid aspect-[16/10] place-content-center bg-gradient-to-br from-surface-lift to-ground px-6">
+        <span className="text-center text-[1.1rem] leading-snug font-light tracking-tight text-ink-dim">
+          {work.title}
+        </span>
+        <span className="mt-2 text-center font-mono text-[0.58rem] tracking-[0.16em] text-edge uppercase">
+          Capture pending
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={work.shot}
+      alt={`${work.title} のファーストビュー`}
+      width={1440}
+      height={900}
+      sizes={sizes}
+      priority={priority}
+      className="aspect-[16/10] w-full object-cover object-top transition-transform duration-500 ease-fluid group-hover:scale-[1.02]"
+    />
   );
 }
