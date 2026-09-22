@@ -27,6 +27,12 @@
   --color-blue-deep: #2b4fb0;
   --color-amber: #f5ce4e;
 
+  /* --- layout ---
+     One width for the board and every stage. They used to disagree: the board
+     was capped narrow while the stages ran the full window, so moving between
+     them felt like changing sites. */
+  --container-shell: 74rem;
+
   /* --- type --- */
   --font-display: var(--font-outfit), var(--font-noto-jp), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
@@ -59,6 +65,31 @@ body {
   font-family: var(--font-display);
   font-weight: 300;
   overscroll-behavior-y: none;
+}
+
+/* Japanese has no spaces, so the default is to break wherever the line runs
+   out of room — mid-word, or between a word and the particle that belongs to
+   it. `keep-all` restricts breaks to punctuation and spaces, which for this
+   copy lands them at 、 and 。 `auto-phrase` was tried first and was worse
+   here: it broke なぜ in half. `overflow-wrap` is the escape hatch for a run
+   with no punctuation in it at all, so nothing can push past its container.
+   Headings additionally get balanced lines, so a title never strands one word
+   on a row of its own. */
+p,
+li,
+dd,
+blockquote {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  text-wrap: balance;
 }
 
 ::selection {

@@ -14,7 +14,7 @@ import { WORKS, type Work } from "@/content/works";
 export function WorkList() {
   return (
     <div className="grid gap-8">
-      <ul className="grid gap-5 sm:grid-cols-2">
+      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {WORKS.map((work) => (
           <li key={work.slug}>
             <WorkCard work={work} />
@@ -38,7 +38,7 @@ function WorkCard({ work }: { work: Work }) {
         transitionTypes={["nav-forward"]}
         className="block overflow-hidden rounded-sm border border-edge-soft bg-surface/50 transition-colors duration-200 hover:border-blue-deep"
       >
-        <Shot work={work} sizes="(min-width: 640px) 45vw, 92vw" />
+        <Shot work={work} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw" />
       </Link>
 
       <div className="flex items-baseline justify-between gap-3">

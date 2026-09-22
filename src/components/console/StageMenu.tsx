@@ -15,6 +15,8 @@ import {
   type Stage,
   type StageId,
 } from "@/content/stages";
+import { LAB } from "@/content/lab";
+import { THOUGHTS } from "@/content/thought";
 import { formatDuration, TRACKS } from "@/content/tracks";
 import { WORKS } from "@/content/works";
 import { useBoot, type BootPhase } from "@/lib/state/BootProvider";
@@ -24,6 +26,8 @@ import { useConsoleStore } from "@/lib/state/console";
 const COUNTS: Partial<Record<StageId, number>> = {
   work: WORKS.length,
   sound: TRACKS.length,
+  lab: LAB.length,
+  thought: THOUGHTS.length,
 };
 
 type PreviewItem = { label: string; meta?: string; real: boolean };
@@ -38,18 +42,51 @@ type PreviewItem = { label: string; meta?: string; real: boolean };
  */
 function previewItems(stage: Stage, limit: number): readonly PreviewItem[] {
   if (stage.id === "sound") {
-    const shown = TRACKS.slice(0, limit).map((track) => ({
-      label: track.title,
-      meta: formatDuration(track.duration),
-      real: true,
-    }));
-    const rest = TRACKS.length - shown.length;
-    return rest > 0 ? [...shown, { label: `ほか${rest}曲`, real: true }] : shown;
+    return withRest(
+      TRACKS.map((track) => ({
+        label: track.title,
+        meta: formatDuration(track.duration),
+        real: true,
+      })),
+      limit,
+      "曲",
+    );
+  }
+
+  if (stage.id === "lab") {
+    return withRest(
+      LAB.map((entry) => ({ label: entry.title, real: true })),
+      limit,
+      "本",
+    );
+  }
+
+  if (stage.id === "thought") {
+    return withRest(
+      THOUGHTS.map((entry) => ({
+        label: entry.title,
+        meta: entry.pillar,
+        real: true,
+      })),
+      limit,
+      "本",
+    );
   }
 
   return stage.holds
     .slice(0, limit)
     .map((held) => ({ label: held, real: false }));
+}
+
+/** Trim to `limit` and say how many did not fit. */
+function withRest(
+  items: readonly PreviewItem[],
+  limit: number,
+  unit: string,
+): readonly PreviewItem[] {
+  const shown = items.slice(0, limit);
+  const rest = items.length - shown.length;
+  return rest > 0 ? [...shown, { label: `ほか${rest}${unit}`, real: true }] : shown;
 }
 
 /**
@@ -151,7 +188,7 @@ export function StageMenu() {
 
   return (
     <>
-      <div className="mx-auto grid min-h-0 w-full max-w-5xl flex-1 grid-rows-[1fr_auto] gap-4 overflow-y-auto px-4 py-4 sm:gap-6 sm:py-6 md:px-9 md:py-8">
+      <div className="mx-auto grid min-h-0 w-full max-w-shell flex-1 grid-rows-[1fr_auto] gap-4 overflow-y-auto px-4 py-4 sm:gap-6 sm:py-6 md:px-9 md:py-8">
       <div className="grid content-center gap-4 sm:gap-6">
         <MainPanel
           stage={main}

@@ -30,7 +30,7 @@ export function StageScreen({
       <div className="flex min-h-0 flex-1 flex-col">
         <StageEscape />
 
-        <div className="grid gap-2 px-4 pt-2 md:px-9">
+        <div className="mx-auto grid w-full max-w-shell gap-3 px-4 pt-7 md:px-9 md:pt-10">
           <ViewTransition name={`stage-${stage.id}`} share="stage-morph" default="none">
             <h1 className="text-[clamp(1.8rem,5vw,3rem)] leading-none font-extralight tracking-[-0.03em]">
               {stage.label}
@@ -39,8 +39,8 @@ export function StageScreen({
           <p className="max-w-[46ch] text-[0.98rem] text-ink-dim">{stage.lede}</p>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-8 md:px-9">
-          {children}
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-9 pb-10 md:px-9">
+          <div className="mx-auto w-full max-w-shell">{children}</div>
         </div>
 
         <KeyGuide
