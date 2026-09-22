@@ -24,7 +24,13 @@ export const workSchema = z
     tagline: z.string().optional(),
     /** the live site, where there is one to link to */
     url: z.string().url().optional(),
-    /** who brought the work in and owned the design — client work only */
+    /**
+     * Who brought the work in and owned the design.
+     *
+     * Present on everything that came through a designer, which is most of it.
+     * Absent means either a job that arrived directly or a credit not yet
+     * confirmed — an unfilled gap rather than a category.
+     */
     designer: z.string().optional(),
     /** left empty until confirmed — an unknown year beats a wrong one */
     year: z.string().optional(),
@@ -56,35 +62,43 @@ export const workSchema = z
         result: z.string().optional(),
       })
       .optional(),
-  })
-  .refine((work) => work.origin !== "client" || Boolean(work.designer), {
-    message: "client work must credit its designer",
-    path: ["designer"],
   });
 
 export type Work = z.infer<typeof workSchema>;
 
-/** What this side of the line covers on a client site, unless an entry says otherwise. */
+/**
+ * The common shape of a client build, for the entries that match it.
+ *
+ * Not every job does: some arrive without a CMS, some are static from the
+ * start. Where an entry differs it spells its own out, because "だいたいこう"
+ * is not something a reader deciding whether to hire can check.
+ */
 const DEFAULT_ROLE = ["実装", "設計", "CMS構築"];
 const DEFAULT_STACK = ["HTML", "CSS", "JavaScript", "WordPress"];
+/** A build with no CMS behind it. */
+const STATIC_STACK = ["HTML", "CSS", "JavaScript"];
 
 const RAW: readonly Work[] = [
   {
     slug: "ashigara-seiga",
     title: "足柄聖河",
+    tagline: "リターナブルびんのミネラルウォーターのブランドサイト",
     origin: "client",
     url: "https://fujibottling.co.jp/ashigaraseiga/",
     designer: "神岡真拓",
-    role: DEFAULT_ROLE,
-    stack: DEFAULT_STACK,
+    year: "2021",
+    role: ["実装", "アニメーション"],
+    stack: STATIC_STACK,
     shot: "/works/ashigara-seiga.webp",
   },
   {
     slug: "alumnote",
     title: "Alumnote",
+    tagline: "大学経営を支えるスタートアップのコーポレートサイト",
     origin: "client",
     url: "https://corporate.alumnote.jp",
     designer: "高木康平",
+    year: "2023",
     role: DEFAULT_ROLE,
     stack: DEFAULT_STACK,
     shot: "/works/alumnote.webp",
@@ -92,39 +106,94 @@ const RAW: readonly Work[] = [
   {
     slug: "less-but-better",
     title: "LESS, BUT BETTER",
+    tagline: "アップサイクル作品を扱うブランドのサイト",
     origin: "client",
     url: "https://lbb-official.com",
     designer: "BVC (bad vibes company)",
+    year: "2023",
     role: DEFAULT_ROLE,
     stack: DEFAULT_STACK,
+    shot: "/works/less-but-better.webp",
   },
   {
     slug: "hitorigokochi",
     title: "ひとりごこち",
+    tagline: "作品を「本」として並べるデザインスタジオのサイト",
     origin: "client",
     url: "https://cocochi.design",
     designer: "高木康平",
+    year: "2022–2024",
     role: DEFAULT_ROLE,
     stack: DEFAULT_STACK,
     shot: "/works/hitorigokochi.webp",
+    story: {
+      problem:
+        "作品を「本」として見せるサイト。一覧は本棚に並び、詳細を開くと本を開いた見開きになる。カンプにある紙の比喩を、作品が増えても崩れず、クライアント自身が並べ替えられる状態まで持っていく必要があった。発注元はデザインスタジオ本人で、これはその自社サイトにあたる。",
+      decisions: [
+        {
+          title: "本らしさは、厚みと傾きと開き方だけで出す",
+          detail:
+            "どうすれば本に見えるかだけを考えた。一覧は本棚から本を取り出す感じ、詳細に入ると左右の見開きになる。左が表紙で、右が中身。めくる音も紙の影も足していない。紙の比喩はやりすぎると途端に安っぽくなるので、足すより削る方向で寄せた。",
+        },
+        {
+          title: "重なりの順序は、後から足さずに先に決める",
+          detail:
+            "本が重なって傾いていると、手前と奥の関係が常に動く。そこにカテゴリの切り替えと詳細への遷移が乗る。z-index を場当たりで決めると必ず破綻するので、重なりの順序を先に設計した。この案件で一番時間をかけたところ。",
+        },
+        {
+          title: "並びの微調整は、クライアントの手に渡す",
+          detail:
+            "本の位置、傾き、降ってくる順番まで WordPress 側から設定できるようにした。発注元がデザイナーなので、見え方をこちらで固定したくなかった。1pxの調整のたびに実装者を挟まなくていい状態にしている。",
+        },
+      ],
+    },
   },
   {
     slug: "yeahgo-shirakawa",
     title: "ヤゴーシラカワ",
+    tagline: "白川町の公式メディア。記事が増えつづける前提のつくり",
     origin: "client",
     url: "https://yeahgoshirakawa.com",
     designer: "神岡真拓",
+    year: "2023",
     role: DEFAULT_ROLE,
     stack: DEFAULT_STACK,
     shot: "/works/yeahgo-shirakawa.webp",
+  },
+  {
+    slug: "naricom",
+    title: "ナリコム",
+    tagline: "赤坂のレンタルジム・サロン・スタジオを運営する会社のサイト",
+    origin: "client",
+    url: "https://naricom.jp/",
+    designer: "KOKI NUMATA",
+    year: "2021",
+    role: ["実装", "アニメーション"],
+    stack: STATIC_STACK,
+    shot: "/works/naricom.webp",
+  },
+  {
+    slug: "hakkohfudo",
+    title: "発酵風土",
+    tagline: "イースト×エンザイム発売10周年の特設サイト",
+    origin: "client",
+    url: "https://www.mdc.co.jp/prmo/yeastenzyme/hakkohfudo/",
+    designer: "神岡真拓",
+    year: "2022",
+    role: ["実装", "アニメーション"],
+    stack: STATIC_STACK,
+    shot: "/works/hakkohfudo.webp",
   },
   {
     slug: "speakup",
     title: "SpeakUp",
     tagline: "使い捨てのリアルタイム声集めボード",
     origin: "self",
+    url: "https://speakup-4zv.pages.dev/",
+    year: "2026",
     role: ["企画", "設計", "実装"],
     stack: ["Supabase", "PostgreSQL", "JavaScript", "Cloudflare Pages"],
+    shot: "/works/speakup.webp",
     story: {
       problem:
         "研修やワークショップで、参加者の声をその場で集めて映したい。ただしアカウント登録を挟んだ時点で、会場の手は止まる。QRを読んで、書いて、終わり。そこまでの導線を最優先にした。テーマを決めて部屋を作るとリンクとQRが出て、届いた声は付箋としてボードに流れる。進行役はドラッグで整理でき、会が終われば部屋ごと閉じて捨てる。",
