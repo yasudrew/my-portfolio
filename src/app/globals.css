@@ -72,7 +72,10 @@ body {
    it. `keep-all` restricts breaks to punctuation and spaces, which for this
    copy lands them at 、 and 。 `auto-phrase` was tried first and was worse
    here: it broke なぜ in half. `overflow-wrap` is the escape hatch for a run
-   with no punctuation in it at all, so nothing can push past its container.
+   with no punctuation in it at all. It has to be `anywhere` rather than
+   `break-word`: only `anywhere` shrinks the element's min-content width, and
+   without that a grid or flex item sizes itself to the longest unbreakable run
+   and pushes its text out of the screen.
    Headings additionally get balanced lines, so a title never strands one word
    on a row of its own. */
 p,
@@ -80,7 +83,7 @@ li,
 dd,
 blockquote {
   word-break: keep-all;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 h1,
@@ -88,7 +91,7 @@ h2,
 h3,
 h4 {
   word-break: keep-all;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   text-wrap: balance;
 }
 

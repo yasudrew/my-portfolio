@@ -9,16 +9,30 @@ import { DISPLAY_FRAGMENT } from "@/gl/fluid/displayShader";
 import { BASE_VERTEX } from "@/gl/fluid/shaders";
 import { budgetFor } from "@/lib/quality/detect";
 import { frameState } from "@/lib/state/frame";
+import { useLabPreview } from "@/lib/state/labPreview";
 import { useAppStore } from "@/lib/state/store";
 
 /** How hard a pointer movement pushes the velocity field. */
 const POINTER_FORCE = 5200;
-/** How hard scrolling shears the field. */
-const SCROLL_FORCE = 900;
 /** Seconds between ambient splats that keep the fluid alive when idle. */
-const AMBIENT_INTERVAL = 0.9;
+const AMBIENT_INTERVAL = 0.45;
 
-/** Palette shared with the CSS design tokens (--color-flow-*). */
+/**
+ * Dye and velocity decay, overriding the solver's defaults.
+ *
+ * The defaults were tuned for a hero section, where a pointer is moving over
+ * the canvas the whole time it is on screen. Here the fluid is a background
+ * behind a page someone is reading, and the pointer may sit still for a
+ * minute — at the original rate the screen is black within a few seconds of
+ * the last movement. Slower decay means it keeps its shape while nothing is
+ * happening.
+ */
+const DENSITY_DISSIPATION = 0.24;
+const VELOCITY_DISSIPATION = 0.16;
+/** Seconds to cross from the lattice to the fluid and back. */
+const FADE_SECONDS = 0.42;
+
+/** Straight from the dye palette the solver was written against. */
 const PALETTE: readonly THREE.Vector3[] = [
   new THREE.Vector3(0.0, 0.85, 1.0), // cyan
   new THREE.Vector3(0.48, 0.36, 1.0), // violet
@@ -27,9 +41,9 @@ const PALETTE: readonly THREE.Vector3[] = [
   new THREE.Vector3(1.0, 0.71, 0.27), // amber
 ];
 
-const BACKGROUND = new THREE.Vector3(0.016, 0.02, 0.039);
+/** `--color-ground`, so a fully faded-in fluid sits on the page's own black. */
+const BACKGROUND = new THREE.Vector3(0.031, 0.043, 0.102);
 
-/** Smoothly cycle the palette so consecutive splats stay related. */
 function paletteAt(t: number, out: THREE.Vector3): THREE.Vector3 {
   const scaled = (t % PALETTE.length) + PALETTE.length;
   const i = Math.floor(scaled) % PALETTE.length;
@@ -37,21 +51,38 @@ function paletteAt(t: number, out: THREE.Vector3): THREE.Vector3 {
   return out.copy(PALETTE[i]).lerp(PALETTE[j], scaled - Math.floor(scaled));
 }
 
-export function HeroFluid() {
+/**
+ * The Lab's fluid preview.
+ *
+ * Mounted while the Lab stage is open and invisible until the pointer settles
+ * on the entry that owns it, then it crossfades over the lattice. Mounting
+ * early is the point: the solver allocates its render targets up front, so the
+ * hover itself costs nothing.
+ *
+ * It keeps simulating at zero opacity rather than freezing. A fluid that
+ * resumes from the exact state it was paused in reads as a screenshot coming
+ * back, not as something that was running the whole time.
+ */
+export function FluidField() {
   const gl = useThree((state) => state.gl);
   const size = useThree((state) => state.size);
 
   const quality = useAppStore((state) => state.quality);
   const reducedMotion = useAppStore((state) => state.reducedMotion);
-  const setReady = useAppStore((state) => state.setReady);
+  const active = useLabPreview((state) => state.active);
 
   const solver = useMemo(() => {
-    const budget = budgetFor("mid");
+    const budget = budgetFor(quality);
     return new FluidSolver(gl, {
       simResolution: budget.simResolution,
       dyeResolution: budget.dyeResolution,
       pressureIterations: budget.pressureIterations,
+      densityDissipation: DENSITY_DISSIPATION,
+      velocityDissipation: VELOCITY_DISSIPATION,
     });
+    // quality changes are applied through setOptions below rather than by
+    // rebuilding the solver, which would drop the field mid-fade
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gl]);
 
   const material = useMemo(
@@ -66,7 +97,9 @@ export function HeroFluid() {
           uTime: { value: 0 },
           uIntensity: { value: 0.9 },
           uIridescence: { value: 1 },
+          uOpacity: { value: 0 },
         },
+        transparent: true,
         depthTest: false,
         depthWrite: false,
       }),
@@ -76,17 +109,24 @@ export function HeroFluid() {
   const scratch = useRef({
     color: new THREE.Vector3(),
     ambientTimer: 0,
+    opacity: 0,
     seeded: false,
-    frames: 0,
   });
 
-  // quality budget -> solver options
+  // Whatever was on screen has faded by the next time anyone looks, so each
+  // reveal starts the field again rather than resuming an empty one.
+  useEffect(() => {
+    if (active !== "fluid-solver") scratch.current.seeded = false;
+  }, [active]);
+
   useEffect(() => {
     const budget = budgetFor(quality);
     solver.setOptions({
       simResolution: budget.simResolution,
       dyeResolution: budget.dyeResolution,
       pressureIterations: budget.pressureIterations,
+      densityDissipation: DENSITY_DISSIPATION,
+      velocityDissipation: VELOCITY_DISSIPATION,
     });
   }, [quality, solver]);
 
@@ -99,18 +139,28 @@ export function HeroFluid() {
 
   useFrame(() => {
     const s = scratch.current;
-    const { pointer, scroll, time } = frameState;
+    const { pointer, time } = frameState;
     const dt = Math.min(time.delta, 1 / 30);
 
-    // --- seed: never open on an empty screen -----------------------------
-    // Placed on the golden angle with a growing radius: evenly covered but
-    // with no rotational symmetry, so the opening frame reads as an accident
-    // of fluid rather than a pattern.
+    const target = active === "fluid-solver" ? 1 : 0;
+    // instant, not eased, when the visitor has asked for less motion
+    s.opacity = reducedMotion
+      ? target
+      : s.opacity + (target - s.opacity) * Math.min(1, dt / FADE_SECONDS);
+    if (Math.abs(target - s.opacity) < 0.002) s.opacity = target;
+
+    material.uniforms.uOpacity.value = s.opacity;
+
+    // nothing on screen and nothing fading — skip the whole simulation
+    if (s.opacity <= 0.002 && target === 0) return;
+
+    // Seeded on first reveal rather than on mount: dye injected while the
+    // field is invisible has already dissipated by the time anyone looks.
     if (!s.seeded) {
       s.seeded = true;
       const SEEDS = 9;
       for (let i = 0; i < SEEDS; i += 1) {
-        const angle = i * 2.399963; // golden angle in radians
+        const angle = i * 2.399963; // golden angle
         const radius = 0.05 + (i / SEEDS) * 0.34;
         const push = 1500 * (1 - (i / SEEDS) * 0.55);
         solver.splat(
@@ -118,14 +168,13 @@ export function HeroFluid() {
           0.5 + Math.sin(angle) * radius,
           Math.cos(angle + 1.9) * push,
           Math.sin(angle + 1.9) * push,
-          paletteAt(i * 0.85, s.color).multiplyScalar(0.34),
+          paletteAt(i * 0.85 + time.elapsed * 0.3, s.color).multiplyScalar(0.5),
           0.006 + i * 0.0018,
         );
       }
     }
 
     if (!reducedMotion) {
-      // --- pointer stirring ---------------------------------------------
       if (pointer.active && (pointer.dx !== 0 || pointer.dy !== 0)) {
         solver.splat(
           pointer.ux,
@@ -138,35 +187,17 @@ export function HeroFluid() {
         );
       }
 
-      // --- scroll shear ---------------------------------------------------
-      const shear = scroll.normalizedVelocity;
-      if (Math.abs(shear) > 0.02) {
-        solver.splat(
-          0.5,
-          scroll.direction > 0 ? 0.05 : 0.95,
-          0,
-          shear * SCROLL_FORCE,
-          paletteAt(time.elapsed * 0.2 + 2, s.color).multiplyScalar(
-            Math.min(0.22, Math.abs(shear) * 0.32),
-          ),
-          0.02,
-        );
-      }
-
-      // --- ambient life ----------------------------------------------------
       s.ambientTimer += dt;
       if (s.ambientTimer >= AMBIENT_INTERVAL) {
         s.ambientTimer = 0;
         const t = time.elapsed;
-        const x = 0.5 + Math.sin(t * 0.31) * 0.34 + Math.sin(t * 0.13) * 0.1;
-        const y = 0.5 + Math.cos(t * 0.24) * 0.3 + Math.cos(t * 0.17) * 0.12;
         solver.splat(
-          x,
-          y,
+          0.5 + Math.sin(t * 0.31) * 0.34 + Math.sin(t * 0.13) * 0.1,
+          0.5 + Math.cos(t * 0.24) * 0.3 + Math.cos(t * 0.17) * 0.12,
           Math.cos(t * 0.7) * 700,
           Math.sin(t * 0.9) * 700,
-          paletteAt(t * 0.11, s.color).multiplyScalar(0.15),
-          0.006,
+          paletteAt(t * 0.11, s.color).multiplyScalar(0.3),
+          0.009,
         );
       }
 
@@ -178,13 +209,10 @@ export function HeroFluid() {
       solver.dyeTexelSize,
     );
     material.uniforms.uTime.value = time.elapsed;
-
-    s.frames += 1;
-    if (s.frames === 2) setReady(true);
   });
 
   return (
-    <mesh frustumCulled={false} material={material}>
+    <mesh frustumCulled={false} material={material} renderOrder={1}>
       <planeGeometry args={[2, 2]} />
     </mesh>
   );

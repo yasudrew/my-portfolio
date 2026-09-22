@@ -24,6 +24,8 @@ export const DISPLAY_FRAGMENT = glsl`
   uniform float uTime;
   uniform float uIntensity;
   uniform float uIridescence;
+  // 0 while the lattice is showing, 1 once the fluid has taken the screen
+  uniform float uOpacity;
 
   float luma(vec3 c) {
     return dot(c, vec3(0.2126, 0.7152, 0.0722));
@@ -73,6 +75,6 @@ export const DISPLAY_FRAGMENT = glsl`
     vec2 v = vUv - 0.5;
     color *= 1.0 - dot(v, v) * 0.85;
 
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, uOpacity);
   }
 `;

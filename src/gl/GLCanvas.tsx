@@ -5,9 +5,11 @@ import { Canvas, useThree } from "@react-three/fiber";
 
 import { registerAdvance } from "@/gl/frameloop";
 import { setRenderer } from "@/gl/renderer";
+import { FluidField } from "@/gl/scenes/FluidField";
 import { LatticeField } from "@/gl/scenes/LatticeField";
 import { LogoDisperse } from "@/gl/scenes/LogoDisperse";
 import { budgetFor } from "@/lib/quality/detect";
+import { useLabPreview } from "@/lib/state/labPreview";
 import { useAppStore } from "@/lib/state/store";
 
 /**
@@ -32,6 +34,8 @@ function FrameDriver() {
 export function GLCanvas() {
   const quality = useAppStore((state) => state.quality);
   const setGlFailed = useAppStore((state) => state.setGlFailed);
+  // only the Lab stage pays for the fluid solver's render targets
+  const labArmed = useLabPreview((state) => state.armed);
   const budget = budgetFor(quality);
 
   return (
@@ -65,6 +69,7 @@ export function GLCanvas() {
       >
         <FrameDriver />
         <LatticeField />
+        {labArmed ? <FluidField /> : null}
         <LogoDisperse src="/brand/logo_grad.png" />
       </Canvas>
     </div>
