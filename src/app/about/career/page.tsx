@@ -63,7 +63,30 @@ export default function CareerPage() {
           ))}
         </ol>
 
-        <p className="mt-12 border-t border-edge-soft pt-8 text-[0.88rem] leading-relaxed text-ink-faint">
+        <section className="mt-12 grid gap-4 border-t border-edge-soft pt-8 sm:grid-cols-[10rem_1fr] sm:gap-6">
+          <h2 className="font-mono text-[0.66rem] tracking-[0.14em] text-ink-faint uppercase sm:pt-1">
+            Before
+          </h2>
+
+          <div className="grid gap-4">
+            <ol className="grid gap-2">
+              {CAREER.prelude.steps.map((step) => (
+                <li key={step.label} className="text-[0.94rem] text-ink-dim">
+                  <span className="text-ink">{step.label}</span>
+                  {step.detail ? (
+                    <span className="text-ink-faint"> ── {step.detail}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ol>
+
+            <p className="text-[0.9rem] leading-relaxed text-ink-faint">
+              {CAREER.prelude.note}
+            </p>
+          </div>
+        </section>
+
+        <p className="mt-10 border-t border-edge-soft pt-8 text-[0.88rem] leading-relaxed text-ink-faint">
           {CAREER.note}
         </p>
       </article>

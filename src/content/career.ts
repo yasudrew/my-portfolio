@@ -28,6 +28,21 @@ export const careerSchema = z.object({
       }),
     )
     .min(1),
+  /**
+   * What came before the first job.
+   *
+   * A reader who sees a career starting in 2020 will go looking for the years
+   * before it, and finding nothing is worse than finding an unusual answer.
+   * Stated as a chain rather than a timeline because the order is the point:
+   * the route into engineering ran through education, which is why the two
+   * have stayed together since.
+   */
+  prelude: z.object({
+    steps: z
+      .array(z.object({ label: z.string(), detail: z.string().optional() }))
+      .min(1),
+    note: z.string(),
+  }),
   /** how the client work on this site relates to the employers above */
   note: z.string(),
 });
@@ -57,7 +72,19 @@ export const CAREER: Career = careerSchema.parse({
     },
   ],
 
-  note: "Workに並べているサイトは、marocreate として個人で受けた仕事です。",
+  prelude: {
+    steps: [
+      {
+        label: "デンマーク留学",
+        detail: "社会教育を学ぶプログラムに3ヶ月間参加。",
+      },
+      { label: "熊本エコビレッジ" },
+      { label: "プログラミングスクール" },
+    ],
+    note: "エンジニアとしてのキャリアはEAST END CREATIVEから始まっています。教育のほうから来て、あとから技術を覚えた順番です。",
+  },
+
+  note: "Workに並べているサイトは、すべて marocreate として個人で受けた仕事です。",
 });
 
 /** Current roles read as "現在" rather than an end date. */
