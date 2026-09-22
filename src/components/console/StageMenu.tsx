@@ -16,11 +16,15 @@ import {
   type StageId,
 } from "@/content/stages";
 import { formatDuration, TRACKS } from "@/content/tracks";
+import { WORKS } from "@/content/works";
 import { useBoot, type BootPhase } from "@/lib/state/BootProvider";
 import { useConsoleStore } from "@/lib/state/console";
 
 /** Entry counts shown beside each stage. Only real content is counted. */
-const COUNTS: Partial<Record<StageId, number>> = { sound: TRACKS.length };
+const COUNTS: Partial<Record<StageId, number>> = {
+  work: WORKS.length,
+  sound: TRACKS.length,
+};
 
 type PreviewItem = { label: string; meta?: string; real: boolean };
 
@@ -152,6 +156,7 @@ export function StageMenu() {
         <MainPanel
           stage={main}
           selected={cursor === main.id}
+          count={COUNTS[main.id]}
           onSelect={selectStage}
         />
 
@@ -218,10 +223,12 @@ export function StageMenu() {
 function MainPanel({
   stage,
   selected,
+  count,
   onSelect,
 }: {
   stage: Stage;
   selected: boolean;
+  count?: number;
   onSelect: (id: StageId) => void;
 }) {
   return (
@@ -256,8 +263,11 @@ function MainPanel({
           </span>
         </div>
 
-        <p className="font-mono text-[0.66rem] tracking-[0.14em] text-ink-faint">
-          {stage.jp}
+        <p className="flex items-baseline gap-3 font-mono text-[0.66rem] tracking-[0.14em] text-ink-faint">
+          <span>{stage.jp}</span>
+          <span className="text-[0.62rem] tracking-[0.1em] tabular-nums">
+            {count !== undefined ? String(count).padStart(2, "0") : "—"}
+          </span>
         </p>
       </div>
 

@@ -47,7 +47,7 @@ const RAW: readonly Stage[] = [
     label: "Work",
     jp: "仕事",
     group: "main",
-    lede: "依頼を受けてつくるもの。課題を聞き、手段を選び、動くものにして渡すまで。サイト構築から社内ツール、業務の自動化まで。",
+    lede: "デザイナーから受けて、実装・設計・CMS構築を担当した仕事。カンプに含まれない動きの設計は、毎回こちらで組み立てています。",
     action: "Open",
     tags: ["Web", "Tool", "Automation"],
     holds: ["HP構築", "ツール開発", "自動化系"],
