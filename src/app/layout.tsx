@@ -29,12 +29,26 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
+  // Crawlers need absolute URLs for the OG card. Vercel supplies the deployment
+  // host at build time; the fallback keeps local previews resolving.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ??
+      (process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : "http://localhost:3000"),
+  ),
   title: {
     default: "marocreate — Portfolio",
     template: "%s — marocreate",
   },
   description:
-    "フロントエンドエンジニア、音楽プロデューサー。つくったものを選んで開くポートフォリオ。",
+    "デザイナーから受けて、実装・設計・CMS構築を担当しています。marocreate（ろま）の制作記録。",
+  openGraph: {
+    type: "website",
+    siteName: "marocreate",
+    locale: "ja_JP",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

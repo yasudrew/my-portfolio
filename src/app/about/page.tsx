@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { StageScreen } from "@/components/console/StageScreen";
 import { ABOUT } from "@/content/about";
@@ -18,6 +19,14 @@ export default function AboutPage() {
               {paragraph}
             </p>
           ))}
+
+          <Link
+            href="/about/career"
+            transitionTypes={["nav-forward"]}
+            className="justify-self-start font-mono text-[0.66rem] tracking-[0.14em] text-ink-faint uppercase transition-colors duration-200 hover:text-blue-lit"
+          >
+            Career →
+          </Link>
         </section>
 
         <section className="grid gap-5 border-t border-edge-soft pt-8">
