@@ -83,17 +83,6 @@ export default async function WorkDetailPage({
           <Field label="Stack" value={work.stack.join(" / ")} />
         </dl>
 
-        {work.motion ? (
-          <section className="border-b border-edge-soft py-8">
-            <h2 className="font-mono text-[0.66rem] tracking-[0.16em] text-amber uppercase">
-              Motion
-            </h2>
-            <p className="mt-3 text-[0.98rem] leading-relaxed text-ink-dim">
-              {work.motion}
-            </p>
-          </section>
-        ) : null}
-
         {work.story ? (
           <section className="grid gap-8 border-b border-edge-soft py-8">
             <Passage heading="課題" body={work.story.problem} />

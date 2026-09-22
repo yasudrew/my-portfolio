@@ -8,10 +8,10 @@ import { z } from "zod";
  * required because the credit belongs on every entry, not because anything is
  * counted from it.
  *
- * Two tiers on purpose. Everything up to `motion` is quick enough to fill in
- * for every job as it ships; `story` is the expensive part and is reserved for
- * the pieces that earn it. Keeping the deep tier optional is what stops the
- * list from going stale.
+ * Two tiers on purpose. The required fields are quick enough to fill in for
+ * every job as it ships; `story` is the expensive part and is reserved for the
+ * pieces that earn it. Keeping the deep tier optional is what stops the list
+ * from going stale.
  */
 export const workSchema = z.object({
   slug: z.string(),
@@ -25,14 +25,6 @@ export const workSchema = z.object({
   /** what was actually done here */
   role: z.array(z.string()).min(1),
   stack: z.array(z.string()).min(1),
-  /**
-   * The part no comp specifies.
-   *
-   * Motion is never in the handoff, so it is designed here every time —
-   * which makes it the clearest thing separating this from "someone who
-   * marks up a PSD". One sentence is enough; it just has to be concrete.
-   */
-  motion: z.string().optional(),
   /**
    * Hero shot of the live site, under `/public`.
    *
