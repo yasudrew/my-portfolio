@@ -80,7 +80,7 @@ const RAW: readonly Stage[] = [
     lede: "考えていることの記録。技術の話も、そうでない話も、なぜつくるのかに繋がる範囲で。",
     action: "Read",
     tags: ["Essay", "Note"],
-    holds: ["Essay", "Note", "Reading"],
+    holds: ["エンジニアリング", "教育", "人生", "音楽"],
   },
   {
     id: "about",

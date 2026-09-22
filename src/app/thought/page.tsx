@@ -1,27 +1,42 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
-import { StageCard } from "@/components/console/StageCard";
 import { StageScreen } from "@/components/console/StageScreen";
-import { stageById } from "@/content/stages";
+import { THOUGHTS } from "@/content/thought";
 
 export const metadata: Metadata = { title: "Thought" };
 
+/**
+ * The writing, as a list of positions.
+ *
+ * Title and one line only. A piece here is short enough that a preview would
+ * be most of it, and reading half an argument in a list is worse than deciding
+ * from its title whether to open it.
+ */
 export default function ThoughtPage() {
-  const stage = stageById("thought")!;
-
   return (
     <StageScreen id="thought">
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] content-start gap-3.5">
-        {stage.holds.map((name, index) => (
-          <StageCard
-            key={name + index}
-            index={index}
-            name={name}
-            action={stage.action}
-            pending
-          />
+      <ul className="grid max-w-[56ch] gap-px">
+        {THOUGHTS.map((entry) => (
+          <li key={entry.slug}>
+            <Link
+              href={`/thought/${entry.slug}`}
+              transitionTypes={["nav-forward"]}
+              className="group grid gap-1.5 border-t border-edge-soft py-5 transition-colors duration-200 hover:border-blue-deep"
+            >
+              <p className="font-mono text-[0.62rem] tracking-[0.16em] text-ink-faint uppercase">
+                {entry.pillar}
+              </p>
+              <h2 className="text-[1.15rem] leading-tight font-light tracking-tight text-ink transition-colors duration-200 group-hover:text-blue-lit">
+                {entry.title}
+              </h2>
+              <p className="text-[0.92rem] leading-relaxed text-ink-dim">
+                {entry.lede}
+              </p>
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
     </StageScreen>
   );
 }
