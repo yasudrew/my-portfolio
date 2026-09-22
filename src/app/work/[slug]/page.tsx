@@ -57,27 +57,34 @@ export default async function WorkDetailPage({
             {work.title}
           </h1>
 
-          <a
-            href={work.url}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="justify-self-start font-mono text-[0.72rem] tracking-[0.08em] text-blue-lit underline-offset-4 transition-colors duration-200 hover:text-ink hover:underline"
-          >
-            {work.url.replace(/^https?:\/\//, "")} ↗
-          </a>
+          {work.tagline ? (
+            <p className="text-[1.02rem] font-light text-ink-dim">{work.tagline}</p>
+          ) : null}
+
+          {work.url ? (
+            <a
+              href={work.url}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="justify-self-start font-mono text-[0.72rem] tracking-[0.08em] text-blue-lit underline-offset-4 transition-colors duration-200 hover:text-ink hover:underline"
+            >
+              {work.url.replace(/^https?:\/\//, "")} ↗
+            </a>
+          ) : null}
         </header>
 
-        <a
-          href={work.url}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="mt-8 block overflow-hidden rounded-sm border border-edge-soft transition-colors duration-200 hover:border-blue-deep"
-        >
-          <Shot work={work} sizes="(min-width: 768px) 48rem, 92vw" priority />
-        </a>
+        <div className="mt-8 overflow-hidden rounded-sm border border-edge-soft transition-colors duration-200 hover:border-blue-deep">
+          {work.url ? (
+            <a href={work.url} target="_blank" rel="noreferrer noopener" className="block">
+              <Shot work={work} sizes="(min-width: 768px) 48rem, 92vw" priority />
+            </a>
+          ) : (
+            <Shot work={work} sizes="(min-width: 768px) 48rem, 92vw" priority />
+          )}
+        </div>
 
         <dl className="grid gap-6 border-b border-edge-soft py-8 sm:grid-cols-2">
-          <Field label="Design" value={work.designer} />
+          {work.designer ? <Field label="Design" value={work.designer} /> : null}
           {work.year ? <Field label="Year" value={work.year} /> : null}
           <Field label="Role" value={work.role.join(" / ")} />
           <Field label="Stack" value={work.stack.join(" / ")} />
@@ -86,8 +93,26 @@ export default async function WorkDetailPage({
         {work.story ? (
           <section className="grid gap-8 border-b border-edge-soft py-8">
             <Passage heading="課題" body={work.story.problem} />
-            <Passage heading="判断" body={work.story.decision} />
-            <Passage heading="結果" body={work.story.result} />
+
+            <div className="grid gap-6">
+              <h3 className="font-mono text-[0.66rem] tracking-[0.16em] text-ink-faint">
+                解いたこと
+              </h3>
+              {work.story.decisions.map((decision) => (
+                <div key={decision.title} className="grid gap-2">
+                  <h4 className="text-[0.98rem] font-light text-ink">
+                    {decision.title}
+                  </h4>
+                  <p className="text-[0.98rem] leading-relaxed text-ink-dim">
+                    {decision.detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {work.story.result ? (
+              <Passage heading="結果" body={work.story.result} />
+            ) : null}
           </section>
         ) : null}
 

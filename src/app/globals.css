@@ -282,3 +282,14 @@ html.lenis body {
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Touch
+   The console's controls are a keyboard idiom. On a phone the key hints are
+   noise competing for a short screen, and tapping is self-evident.
+   ========================================================================== */
+@media (pointer: coarse) {
+  .key-guide {
+    display: none;
+  }
+}

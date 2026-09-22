@@ -23,7 +23,7 @@ export function WorkList() {
       </ul>
 
       <p className="max-w-[54ch] text-[0.88rem] leading-relaxed text-ink-faint">
-        デザインはいずれもデザイナーの担当です。こちらは実装・設計・CMS構築を受け持っています。
+        サイト制作はデザイナーからの依頼で、デザインは先方の担当です。こちらは実装・設計・CMS構築を受け持っています。
         カンプに含まれない動きの設計は、毎回この手でやっています。
       </p>
     </div>
@@ -51,18 +51,20 @@ function WorkCard({ work }: { work: Work }) {
             {work.title}
           </span>
           <span className="font-mono text-[0.62rem] tracking-[0.1em] text-ink-faint">
-            Design — {work.designer}
+            {work.designer ? `Design — ${work.designer}` : work.tagline}
           </span>
         </Link>
 
-        <a
-          href={work.url}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="shrink-0 font-mono text-[0.62rem] tracking-[0.12em] text-ink-faint uppercase transition-colors duration-200 hover:text-blue-lit"
-        >
-          Live ↗
-        </a>
+        {work.url ? (
+          <a
+            href={work.url}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="shrink-0 font-mono text-[0.62rem] tracking-[0.12em] text-ink-faint uppercase transition-colors duration-200 hover:text-blue-lit"
+          >
+            Live ↗
+          </a>
+        ) : null}
       </div>
     </article>
   );

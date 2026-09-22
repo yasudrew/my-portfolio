@@ -151,8 +151,8 @@ export function StageMenu() {
 
   return (
     <>
-      <div className="mx-auto grid min-h-0 w-full max-w-5xl flex-1 grid-rows-[1fr_auto] gap-6 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
-      <div className="grid content-center gap-6">
+      <div className="mx-auto grid min-h-0 w-full max-w-5xl flex-1 grid-rows-[1fr_auto] gap-4 overflow-y-auto px-4 py-4 sm:gap-6 sm:py-6 md:px-9 md:py-8">
+      <div className="grid content-center gap-4 sm:gap-6">
         <MainPanel
           stage={main}
           selected={cursor === main.id}
@@ -188,16 +188,16 @@ export function StageMenu() {
       </div>
 
         <div
-          className="stage-in flex items-end justify-between gap-6 pb-1"
+          className="stage-in flex items-end justify-between gap-4 pb-1"
           style={{ animationDelay: "430ms" }}
         >
-          <p className="max-w-[52ch] text-[0.92rem] leading-relaxed text-ink-dim">
+          <p className="line-clamp-2 max-w-[52ch] text-[0.8rem] leading-relaxed text-ink-dim sm:line-clamp-none sm:text-[0.92rem]">
             {selected.lede}
           </p>
 
           <HummingMonster
             key={cursor}
-            className="guide-perk pointer-events-none w-[clamp(84px,12vw,132px)] shrink-0 text-amber"
+            className="guide-perk pointer-events-none w-14 shrink-0 text-amber sm:w-[clamp(84px,12vw,132px)]"
           />
         </div>
       </div>
@@ -241,7 +241,7 @@ function MainPanel({
       aria-current={selected ? "true" : undefined}
       style={{ animationDelay: "0ms" }}
       className={[
-        "stage-in group grid gap-6 rounded-sm border border-l-2 p-5 focus-visible:outline-none md:p-8",
+        "stage-in group grid gap-4 rounded-sm border border-l-2 p-4 focus-visible:outline-none sm:gap-6 sm:p-5 md:p-8",
         "transition-[color,border-color,background] duration-200 ease-fluid",
         selected
           ? "border-edge-soft border-l-amber bg-gradient-to-br from-blue/14 via-transparent to-transparent text-ink"
@@ -258,7 +258,7 @@ function MainPanel({
           >
             Main
           </span>
-          <span className="text-[clamp(2.2rem,6vh,3.6rem)] leading-none font-light tracking-tight">
+          <span className="text-[clamp(1.9rem,6vh,3.6rem)] leading-none font-light tracking-tight">
             {stage.label}
           </span>
         </div>
@@ -272,7 +272,7 @@ function MainPanel({
       </div>
 
       {/* the three pillars, laid out as the offer rather than as a category list */}
-      <ul className="grid gap-2 border-t border-edge-soft pt-4 sm:grid-cols-3 sm:gap-4">
+      <ul className="grid gap-1.5 border-t border-edge-soft pt-3 sm:grid-cols-3 sm:gap-4 sm:pt-4">
         {stage.holds.map((held) => (
           <li
             key={held}
@@ -294,7 +294,15 @@ function MainPanel({
   );
 }
 
-/** One tile in the playground row. */
+/**
+ * One entry in the playground.
+ *
+ * A card on a wide screen and a single row on a phone. Three cards stack to
+ * roughly 500px, which is most of a phone screen spent on the *secondary*
+ * section — so on touch the contents glimpse drops away and each stage becomes
+ * one line. The board still fits without scrolling, which is the whole point
+ * of it being a board.
+ */
 function PlayTile({
   stage,
   selected,
@@ -320,27 +328,29 @@ function PlayTile({
       aria-current={selected ? "true" : undefined}
       style={{ animationDelay: `${delay}ms` }}
       className={[
-        "stage-in grid content-start gap-3 rounded-sm border border-l-2 p-4 focus-visible:outline-none",
+        "stage-in relative flex items-center gap-3 rounded-sm border border-l-2 px-4 py-3 focus-visible:outline-none",
+        "sm:grid sm:min-h-[10.5rem] sm:content-start sm:gap-3 sm:p-4",
         "transition-[color,border-color,background] duration-200 ease-fluid",
         selected
           ? "border-edge-soft border-l-amber bg-blue/10 text-ink"
           : "border-edge-soft border-l-edge-soft text-ink-faint hover:text-ink-dim",
       ].join(" ")}
     >
-      <span className="flex items-baseline justify-between gap-2">
-        <span className="text-[clamp(1.15rem,2.8vh,1.5rem)] leading-none font-light tracking-tight">
+      <span className="flex flex-1 items-baseline gap-3 sm:contents">
+        <span className="text-[1.15rem] leading-none font-light tracking-tight sm:order-1">
           {stage.label}
         </span>
-        <span className="font-mono text-[0.6rem] tracking-[0.1em] text-ink-faint tabular-nums">
-          {count !== undefined ? String(count).padStart(2, "0") : "—"}
+        <span className="font-mono text-[0.62rem] tracking-[0.12em] text-ink-faint sm:order-2">
+          {stage.jp}
         </span>
       </span>
 
-      <span className="font-mono text-[0.62rem] tracking-[0.12em] text-ink-faint">
-        {stage.jp}
+      <span className="font-mono text-[0.6rem] tracking-[0.1em] text-ink-faint tabular-nums sm:absolute sm:top-4 sm:right-4">
+        {count !== undefined ? String(count).padStart(2, "0") : "—"}
       </span>
 
-      <ul className="grid gap-1 border-t border-edge-soft pt-2.5">
+      {/* the glimpse is a wide-screen luxury */}
+      <ul className="hidden gap-1 border-t border-edge-soft pt-2.5 sm:order-3 sm:grid">
         {items.map((item) => (
           <li
             key={item.label}
