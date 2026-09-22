@@ -14,6 +14,10 @@ import { useBoot } from "@/lib/state/BootProvider";
  * slides underneath it — the visitor keeps one reference point that never
  * moves, which is what makes the sliding read as "the content moved" rather
  * than "the whole page jumped".
+ *
+ * Sticky as well, because a long stage scrolls: the board never does, so this
+ * was invisible until About grew past a screen, and a reader who had scrolled
+ * had no way back to the menu.
  */
 export function HUD() {
   const pathname = usePathname();
@@ -28,7 +32,7 @@ export function HUD() {
 
   return (
     <header
-      className="hud-in flex items-center justify-between gap-4 px-4 py-4 md:px-9"
+      className="hud-in sticky top-0 z-20 flex items-center justify-between gap-4 bg-ground/85 px-4 py-4 backdrop-blur-sm md:px-9"
       style={{ viewTransitionName: "site-hud" }}
     >
       <Link

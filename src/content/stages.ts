@@ -87,7 +87,7 @@ const RAW: readonly Stage[] = [
     label: "About",
     jp: "自己紹介",
     group: "meta",
-    lede: "経歴、できること、大事にしていること。仕事の相談先としての情報もここに。",
+    lede: "何をする人で、どこまで引き受けて、どれくらいかかるのか。依頼を検討するときに要る情報をここにまとめています。",
     action: "Open",
     tags: ["Profile", "Contact"],
     holds: ["Profile", "Skills", "Contact"],
