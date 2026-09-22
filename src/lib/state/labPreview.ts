@@ -37,4 +37,6 @@ export const PREVIEWABLE = new Set([
   "fluid-solver",
   "curl-flow",
   "domain-warp",
+  "hero-object",
+  "logo-disperse",
 ]);

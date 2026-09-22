@@ -4,10 +4,12 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
-import { getStudioEnvironment } from "./env/studioEnvironment";
+import { getStudioEnvironment } from "@/gl/env/studioEnvironment";
+import { advanceFade, isDormant, type Fade } from "@/gl/scenes/lab/fade";
 import { glsl } from "@/gl/shaders/glsl";
 import { SIMPLEX_NOISE_3D } from "@/gl/shaders/simplexNoise";
 import { frameState } from "@/lib/state/frame";
+import { useLabPreview } from "@/lib/state/labPreview";
 import { useAppStore } from "@/lib/state/store";
 import type { QualityTier } from "@/lib/quality/detect";
 
@@ -67,13 +69,47 @@ const VERTEX_HEADER = glsl`
   }
 `;
 
+const GROUND = new THREE.Vector3(0.031, 0.043, 0.102);
+
+const BACKDROP_VERTEX = glsl`
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+  }
+`;
+
+const BACKDROP_FRAGMENT = glsl`
+  precision highp float;
+  varying vec2 vUv;
+  uniform float uOpacity;
+  uniform vec3 uGround;
+  void main() {
+    vec2 v = vUv - 0.5;
+    gl_FragColor = vec4(uGround * (1.0 - dot(v, v) * 0.6), uOpacity);
+  }
+`;
+
+/**
+ * The first title card, kept as a Lab preview.
+ *
+ * An icosphere pushed around by two octaves of simplex noise, lit entirely by
+ * an environment map built in-process. The normals are rebuilt from two
+ * displaced neighbours every frame, which is the only reason the highlights
+ * stay on the surface instead of sliding across it.
+ *
+ * It is also the one preview that is real geometry rather than a full-screen
+ * quad, which is why the canvas carries a depth buffer at all.
+ */
 export function HeroObject() {
   const gl = useThree((state) => state.gl);
   const viewport = useThree((state) => state.viewport);
 
   const quality = useAppStore((state) => state.quality);
   const reducedMotion = useAppStore((state) => state.reducedMotion);
-  const setReady = useAppStore((state) => state.setReady);
+  const active = useLabPreview((state) => state.active);
+  const visible = active === "hero-object";
+  const fade = useRef<Fade>({ opacity: 0 });
 
   const tiltGroup = useRef<THREE.Group>(null);
   const spinGroup = useRef<THREE.Group>(null);
@@ -96,6 +132,8 @@ export function HeroObject() {
       metalness: 0.92,
       roughness: 0.3,
       envMapIntensity: 1.7,
+      transparent: true,
+      opacity: 0,
     });
 
     instance.onBeforeCompile = (shader) => {
@@ -135,12 +173,34 @@ export function HeroObject() {
 
   const scale = Math.min(viewport.width, viewport.height) * 0.26;
 
-  const scratch = useRef({ energy: 0, frames: 0 });
+  const backdrop = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: BACKDROP_VERTEX,
+        fragmentShader: BACKDROP_FRAGMENT,
+        uniforms: {
+          uOpacity: { value: 0 },
+          uGround: { value: GROUND.clone() },
+        },
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+      }),
+    [],
+  );
+  useEffect(() => () => backdrop.dispose(), [backdrop]);
+
+  const scratch = useRef({ energy: 0 });
 
   useFrame(() => {
     const { pointer, time } = frameState;
     const dt = Math.min(time.delta, 1 / 30);
     const s = scratch.current;
+
+    const opacity = advanceFade(fade.current, visible, dt, reducedMotion);
+    material.opacity = opacity;
+    backdrop.uniforms.uOpacity.value = opacity;
+    if (isDormant(fade.current, visible)) return;
 
     if (!reducedMotion) {
       uniforms.uTime.value = time.elapsed;
@@ -162,16 +222,20 @@ export function HeroObject() {
       }
     }
 
-    s.frames += 1;
-    if (s.frames === 2) setReady(true);
   });
 
   return (
     <>
+      <mesh frustumCulled={false} material={backdrop} renderOrder={1}>
+        <planeGeometry args={[2, 2]} />
+      </mesh>
       <ambientLight intensity={0.12} />
+      {/* renderOrder has to sit on the mesh: three does not inherit it down a
+          group, so with it on the wrapper the sphere drew before the backdrop
+          and the backdrop painted over it */}
       <group ref={tiltGroup} scale={scale}>
         <group ref={spinGroup}>
-          <mesh geometry={geometry} material={material} />
+          <mesh geometry={geometry} material={material} renderOrder={2} />
         </group>
       </group>
     </>

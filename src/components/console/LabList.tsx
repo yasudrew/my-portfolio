@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { LAB, STATUS_LABEL, type LabEntry } from "@/content/lab";
+import { triggerDisperseAt } from "@/gl/logoDisperse";
 import { PREVIEWABLE, useLabPreview } from "@/lib/state/labPreview";
 
 /**
@@ -13,6 +14,15 @@ import { PREVIEWABLE, useLabPreview } from "@/lib/state/labPreview";
  * still feels like hover rather than a click.
  */
 const DWELL_MS = 150;
+
+/**
+ * Milliseconds between replays of the logo dispersal.
+ *
+ * Unlike the other previews this one is an event, not a state: it runs for a
+ * second and is over. Holding a pointer on the entry replays it, which is the
+ * closest thing to "leave it running" the effect has.
+ */
+const DISPERSE_REPLAY_MS = 1700;
 
 /**
  * The playground.
@@ -42,6 +52,28 @@ export function LabList() {
   }, [setArmed]);
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  // The dispersal has nowhere of its own to happen — the lockup it takes apart
+  // lives on the title card, not here — so the demo fires it at a box on the
+  // clear side of the screen, away from the text.
+  useEffect(() => {
+    if (active !== "logo-disperse") return;
+
+    const fire = () => {
+      const width = Math.min(544, window.innerWidth * 0.4);
+      const height = (width * 203) / 1184; // the lockup's own proportions
+      triggerDisperseAt({
+        x: window.innerWidth - width - window.innerWidth * 0.06,
+        y: (window.innerHeight - height) / 2,
+        width,
+        height,
+      });
+    };
+
+    fire();
+    const id = window.setInterval(fire, DISPERSE_REPLAY_MS);
+    return () => window.clearInterval(id);
+  }, [active]);
 
   const dwell = useCallback(
     (slug: string | null) => {
@@ -132,7 +164,7 @@ function Entry({
               playing ? "text-amber" : "text-edge",
             ].join(" ")}
           >
-            {playing ? "背景で実行中" : "ホバーで実行"}
+            {playing ? "実行中" : "ホバーで実行"}
           </p>
         ) : null}
       </div>

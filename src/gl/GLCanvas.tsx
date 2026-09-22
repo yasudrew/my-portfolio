@@ -7,6 +7,7 @@ import { registerAdvance } from "@/gl/frameloop";
 import { setRenderer } from "@/gl/renderer";
 import { FluidField } from "@/gl/scenes/FluidField";
 import { CurlFlow } from "@/gl/scenes/lab/CurlFlow";
+import { HeroObject } from "@/gl/scenes/lab/HeroObject";
 import { DomainWarp } from "@/gl/scenes/lab/DomainWarp";
 import { LatticeField } from "@/gl/scenes/LatticeField";
 import { LogoDisperse } from "@/gl/scenes/LogoDisperse";
@@ -58,7 +59,9 @@ export function GLCanvas() {
         gl={{
           antialias: false,
           alpha: true,
-          depth: false,
+          // the Lab's Hero Object is the only real geometry on the canvas, and
+          // without this its own far side draws over its near side
+          depth: true,
           stencil: false,
           powerPreference: "high-performance",
         }}
@@ -75,6 +78,7 @@ export function GLCanvas() {
           <>
             <FluidField />
             <CurlFlow />
+            <HeroObject />
             <DomainWarp />
           </>
         ) : null}

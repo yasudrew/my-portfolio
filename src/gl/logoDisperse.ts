@@ -31,12 +31,24 @@ export const disperseState: DisperseState = {
 
 export function triggerDisperse(element: HTMLElement): void {
   const box = element.getBoundingClientRect();
-  disperseState.rect = {
+  triggerDisperseAt({
     x: box.x,
     y: box.y,
     width: box.width,
     height: box.height,
-  };
+  });
+}
+
+/**
+ * Fire the effect at an arbitrary box.
+ *
+ * The title card hands over a real element, because there the point is that
+ * the lockup on screen is the thing coming apart. The Lab demo has no such
+ * element — it is showing what the effect does, not undoing anything — so it
+ * names a box directly.
+ */
+export function triggerDisperseAt(rect: DisperseState["rect"]): void {
+  disperseState.rect = rect;
   disperseState.elapsed = 0;
   disperseState.active = true;
 }
