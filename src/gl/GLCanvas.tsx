@@ -6,6 +6,8 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { registerAdvance } from "@/gl/frameloop";
 import { setRenderer } from "@/gl/renderer";
 import { FluidField } from "@/gl/scenes/FluidField";
+import { CurlFlow } from "@/gl/scenes/lab/CurlFlow";
+import { DomainWarp } from "@/gl/scenes/lab/DomainWarp";
 import { LatticeField } from "@/gl/scenes/LatticeField";
 import { LogoDisperse } from "@/gl/scenes/LogoDisperse";
 import { budgetFor } from "@/lib/quality/detect";
@@ -69,7 +71,13 @@ export function GLCanvas() {
       >
         <FrameDriver />
         <LatticeField />
-        {labArmed ? <FluidField /> : null}
+        {labArmed ? (
+          <>
+            <FluidField />
+            <CurlFlow />
+            <DomainWarp />
+          </>
+        ) : null}
         <LogoDisperse src="/brand/logo_grad.png" />
       </Canvas>
     </div>

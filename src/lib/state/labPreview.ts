@@ -33,4 +33,8 @@ export const useLabPreview = create<LabPreviewState>((set) => ({
 }));
 
 /** Entries that have a background to show. The rest hover inertly. */
-export const PREVIEWABLE = new Set(["fluid-solver"]);
+export const PREVIEWABLE = new Set([
+  "fluid-solver",
+  "curl-flow",
+  "domain-warp",
+]);
