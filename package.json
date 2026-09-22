@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "shots": "python3 scripts/capture-work-shots.py"
+    "shots": "python3 scripts/capture-work-shots.py",
+    "og": "python3 scripts/make-og.py"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

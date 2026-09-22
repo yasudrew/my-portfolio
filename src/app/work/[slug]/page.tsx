@@ -12,6 +12,14 @@ export function generateStaticParams(): Params[] {
   return WORKS.map((work) => ({ slug: work.slug }));
 }
 
+/**
+ * The share card for one piece of work.
+ *
+ * Where a capture exists it becomes the image: the site itself is the most
+ * persuasive thing about a website, and it beats any card this repo could
+ * draw. Entries without one fall through to the site's own card rather than
+ * shipping a blank frame.
+ */
 export async function generateMetadata({
   params,
 }: {
@@ -19,7 +27,33 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const work = workBySlug(slug);
-  return { title: work?.title ?? "Work" };
+  if (!work) return { title: "Work" };
+
+  const meta: Metadata = {
+    title: work.title,
+    description: work.designer
+      ? `Design ${work.designer}。実装・設計・CMS構築を担当しました。`
+      : work.tagline,
+  };
+
+  // Only set `openGraph` when there is an image to put in it. Passing the key
+  // with `undefined` clears what the root layout and the site's own
+  // `opengraph-image` file already resolved, leaving the card with no picture.
+  if (!work.shot) return meta;
+
+  return {
+    ...meta,
+    openGraph: {
+      images: [
+        {
+          url: work.shot,
+          width: 1440,
+          height: 900,
+          alt: `${work.title} のファーストビュー`,
+        },
+      ],
+    },
+  };
 }
 
 /**

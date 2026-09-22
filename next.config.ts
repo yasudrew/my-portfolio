@@ -1,16 +1,17 @@
-import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {
     /**
-     * Pin the workspace root to this directory.
+     * Pin the workspace root to the directory the build runs in.
      *
-     * Without it Turbopack walks up looking for a lockfile and finds one in the
-     * home directory, outside the repo — then warns and ignores it. Stating the
-     * root keeps local and CI builds resolving from the same place.
+     * Without it Turbopack walks up looking for a lockfile and can find one
+     * outside the repo, then warns and ignores it. `process.cwd()` is used
+     * rather than `import.meta.dirname` because this file is loaded as CJS in
+     * some environments — the package has no `"type": "module"` — and
+     * `import.meta` is unavailable there.
      */
-    root: path.resolve(import.meta.dirname),
+    root: process.cwd(),
   },
 };
 
