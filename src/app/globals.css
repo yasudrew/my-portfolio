@@ -19,7 +19,10 @@
   /* --- ink --- */
   --color-ink: #e9efff;
   --color-ink-dim: #8b9bc6;
-  --color-ink-faint: #55648f;
+  /* Raised from #55648f: at the sizes this is used (10–11px labels) that read
+     3.36:1 on the ground, under the 4.5:1 AA needs for body text. This clears
+     it on both the ground and the panel surface without shifting hue. */
+  --color-ink-faint: #7382ac;
 
   /* --- brand --- */
   --color-blue: #4c7df6;
