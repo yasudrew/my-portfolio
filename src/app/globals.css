@@ -13,6 +13,8 @@
   --color-ground-deep: #05070f;
   --color-surface: #111935;
   --color-surface-lift: #16203f;
+  /* Line colours, not text colours. At 1.53:1 on the ground these are
+     invisible as glyphs — use --color-ink-faint for the faintest text. */
   --color-edge: #22305c;
   --color-edge-soft: #182348;
 

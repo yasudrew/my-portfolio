@@ -203,7 +203,7 @@ export function StageMenu() {
               {PLAY_HEADING.jp}
             </span>
             <span className="h-px flex-1 bg-edge-soft" />
-            <span className="font-mono text-[0.58rem] tracking-[0.18em] text-edge uppercase">
+            <span className="font-mono text-[0.58rem] tracking-[0.18em] text-ink-faint uppercase">
               {PLAY_HEADING.label}
             </span>
           </div>
@@ -290,7 +290,7 @@ function MainPanel({
           <span
             className={[
               "font-mono text-[0.66rem] tracking-[0.22em] uppercase transition-colors duration-200",
-              selected ? "text-amber" : "text-edge",
+              selected ? "text-amber" : "text-ink-faint",
             ].join(" ")}
           >
             Main
@@ -318,7 +318,7 @@ function MainPanel({
             <span
               className={[
                 "font-mono text-[0.6rem] transition-colors duration-200",
-                selected ? "text-amber" : "text-edge",
+                selected ? "text-amber" : "text-ink-faint",
               ].join(" ")}
             >
               ▸
@@ -393,11 +393,11 @@ function PlayTile({
             key={item.label}
             className="flex items-baseline justify-between gap-2 font-mono text-[0.64rem]"
           >
-            <span className={item.real ? "text-ink-dim" : "text-edge"}>
+            <span className={item.real ? "text-ink-dim" : "text-ink-faint"}>
               {item.real ? item.label : item.label.toUpperCase()}
             </span>
             {item.meta ? (
-              <span className="text-edge tabular-nums">{item.meta}</span>
+              <span className="text-ink-faint tabular-nums">{item.meta}</span>
             ) : null}
           </li>
         ))}

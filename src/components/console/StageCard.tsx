@@ -20,7 +20,7 @@ export function StageCard({
 }) {
   return (
     <article className="grid min-h-[9.5rem] content-between gap-4 rounded-sm border border-edge-soft bg-surface/60 p-4 transition-[border-color,background,transform] duration-200 ease-snap hover:-translate-y-[3px] hover:border-blue-deep hover:bg-surface-lift/80">
-      <span className="font-mono text-[0.62rem] tracking-[0.14em] text-edge uppercase">
+      <span className="font-mono text-[0.62rem] tracking-[0.14em] text-ink-faint uppercase">
         Slot {String(index + 1).padStart(2, "0")}
       </span>
       <span

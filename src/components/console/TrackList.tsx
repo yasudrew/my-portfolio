@@ -99,7 +99,7 @@ export function TrackList() {
                 <span
                   className={[
                     "relative font-mono text-[0.68rem] tracking-[0.1em] tabular-nums",
-                    isCurrent ? "text-amber" : "text-edge",
+                    isCurrent ? "text-amber" : "text-ink-faint",
                   ].join(" ")}
                 >
                   {isCurrent && playing ? "❚❚" : String(index + 1).padStart(2, "0")}

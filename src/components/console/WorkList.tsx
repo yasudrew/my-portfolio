@@ -92,7 +92,7 @@ export function Shot({
         <span className="text-center text-[1.1rem] leading-snug font-light tracking-tight text-ink-dim">
           {work.title}
         </span>
-        <span className="mt-2 text-center font-mono text-[0.58rem] tracking-[0.16em] text-edge uppercase">
+        <span className="mt-2 text-center font-mono text-[0.58rem] tracking-[0.16em] text-ink-faint uppercase">
           Capture pending
         </span>
       </div>

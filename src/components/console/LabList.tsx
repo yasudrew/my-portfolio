@@ -161,7 +161,7 @@ function Entry({
               // a device with no hover has nothing to promise here
               "ml-auto hidden font-mono text-[0.6rem] tracking-[0.14em] uppercase transition-colors duration-300",
               "[@media(hover:hover)]:block",
-              playing ? "text-amber" : "text-edge",
+              playing ? "text-amber" : "text-ink-faint",
             ].join(" ")}
           >
             {playing ? "実行中" : "ホバーで実行"}

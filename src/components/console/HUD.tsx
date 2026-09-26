@@ -69,7 +69,7 @@ export function HUD() {
               >
                 Menu
               </Link>
-              <span className="text-edge">/</span>
+              <span className="text-ink-faint">/</span>
               <span className="text-blue-lit">{stage.label}</span>
             </>
           ) : (
