@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "partner-lp-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "../maro-partner", "run", "dev", "--", "-p", "3100"],
+      "port": 3100
     }
   ]
 }
