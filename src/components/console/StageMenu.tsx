@@ -454,7 +454,7 @@ function TitleCard({
           className={[
             "font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase",
             "transition-opacity duration-300 ease-fluid",
-            leaving ? "opacity-0" : "animate-pulse opacity-100",
+            leaving ? "opacity-0" : "prompt-breathe",
           ].join(" ")}
         >
           Press Enter / Click to start

@@ -330,3 +330,30 @@ html.lenis body {
     display: none;
   }
 }
+
+/* ==========================================================================
+   The start prompt
+   Tailwind's `animate-pulse` dips to 0.5 opacity, which puts this text at
+   3.01:1 on the ground — under AA for its size. Breathing between 0.7 and 1
+   keeps the same invitation without dropping below 4.88:1.
+   ========================================================================== */
+@keyframes prompt-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.prompt-breathe {
+  animation: prompt-breathe 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-breathe {
+    animation: none;
+    opacity: 1;
+  }
+}
