@@ -106,13 +106,26 @@ export function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+let webgl2Support: boolean | null = null;
+
+/**
+ * Whether this browser can give us a WebGL2 context at all.
+ *
+ * Cached because the probe allocates a canvas and the answer cannot change
+ * for the life of the page. Read on every render through
+ * `useSyncExternalStore`, so it has to be cheap and stable.
+ */
 export function hasWebGL2(): boolean {
+  if (webgl2Support !== null) return webgl2Support;
   if (typeof document === "undefined") return false;
   try {
-    return Boolean(document.createElement("canvas").getContext("webgl2"));
+    webgl2Support = Boolean(
+      document.createElement("canvas").getContext("webgl2"),
+    );
   } catch {
-    return false;
+    webgl2Support = false;
   }
+  return webgl2Support;
 }
 
 /**

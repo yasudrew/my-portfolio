@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 
 import { registerAdvance } from "@/gl/frameloop";
@@ -11,7 +11,7 @@ import { HeroObject } from "@/gl/scenes/lab/HeroObject";
 import { DomainWarp } from "@/gl/scenes/lab/DomainWarp";
 import { LatticeField } from "@/gl/scenes/LatticeField";
 import { LogoDisperse } from "@/gl/scenes/LogoDisperse";
-import { budgetFor } from "@/lib/quality/detect";
+import { budgetFor, hasWebGL2 } from "@/lib/quality/detect";
 import { useLabPreview } from "@/lib/state/labPreview";
 import { useAppStore } from "@/lib/state/store";
 
@@ -34,12 +34,32 @@ function FrameDriver() {
  * stages never tears down a WebGL context. Decoration only — `aria-hidden`, and
  * everything it expresses is also present in the DOM above it.
  */
+/** The probe's answer never changes, so there is nothing to subscribe to. */
+function subscribeNever(): () => void {
+  return () => {};
+}
+
 export function GLCanvas() {
+  /**
+   * Skip the canvas entirely where WebGL cannot run.
+   *
+   * Without this, three throws while creating its context and the console
+   * fills with errors on any machine with a blacklisted GPU, WebGL disabled,
+   * or aggressive power saving. The background is decoration — every piece of
+   * information it carries is in the DOM above it — so the right response to
+   * "no WebGL here" is silence, not a stack trace.
+   *
+   * Reported as false during SSR so the server never renders a canvas the
+   * client might not keep.
+   */
+  const supported = useSyncExternalStore(subscribeNever, hasWebGL2, () => false);
   const quality = useAppStore((state) => state.quality);
   const setGlFailed = useAppStore((state) => state.setGlFailed);
   // only the Lab stage pays for the fluid solver's render targets
   const labArmed = useLabPreview((state) => state.armed);
   const budget = budgetFor(quality);
+
+  if (!supported) return null;
 
   return (
     <div
