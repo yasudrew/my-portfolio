@@ -45,6 +45,31 @@ export default function AboutPage() {
           </dl>
         </section>
 
+        <section className="grid gap-4 border-t border-edge-soft pt-8">
+          <Label>お店向けの月額サービス</Label>
+          <div className="grid gap-3 rounded-lg border border-edge p-5">
+            <p className="grid gap-1">
+              <span className="text-[1.05rem] tracking-tight text-ink">
+                {ABOUT.service.name}
+              </span>
+              <span className="text-[0.88rem] text-ink-dim">
+                {ABOUT.service.tagline}
+              </span>
+            </p>
+            <p className="text-[0.94rem] leading-relaxed text-ink-dim">
+              {ABOUT.service.detail}
+            </p>
+            <a
+              href={ABOUT.service.url}
+              target="_blank"
+              rel="noopener"
+              className="justify-self-start text-[0.94rem] text-blue-lit underline-offset-[6px] transition-colors duration-200 hover:text-ink hover:underline"
+            >
+              {ABOUT.service.cta} ↗
+            </a>
+          </div>
+        </section>
+
         <section className="grid gap-5 border-t border-edge-soft pt-8">
           <Label>使うもの</Label>
           <div className="grid gap-4 sm:grid-cols-2">

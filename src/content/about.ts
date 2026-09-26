@@ -31,6 +31,19 @@ export const aboutSchema = z.object({
     personal: z.array(z.string()).min(1),
     note: z.string(),
   }),
+  /**
+   * The monthly service for small shops, run separately under its own name.
+   * Linked from here rather than folded into `offers`: the reader of this page
+   * is usually a designer, and the service is for their clients' neighbours,
+   * not for them — so it gets one block and a way out, not the headline.
+   */
+  service: z.object({
+    name: z.string(),
+    tagline: z.string(),
+    detail: z.string(),
+    url: z.string().url(),
+    cta: z.string(),
+  }),
   terms: z.array(z.object({ label: z.string(), value: z.string() })).min(1),
   contact: z.object({
     email: z.string().email(),
@@ -74,6 +87,15 @@ export const ABOUT: About = aboutSchema.parse({
     note: "受託ではHTML/CSS/JavaScript/WordPressを使っています。Next.jsなどは個人制作で扱っているもので、受託での実績はまだありません（このサイトがそれです）。",
   },
 
+  service: {
+    name: "Kakari（カカリ）",
+    tagline: "あなたのためのITかかりつけ",
+    detail:
+      "小さなお店や教室向けに、月額でデジタルまわりを見るサービスも個人でやっています。ホームページの更新から、予約や集計の自動化、AIの使いどころまで。月9,800円から、初回の診断は無料です。",
+    url: "https://maro-partner.vercel.app/",
+    cta: "Kakari のサイトを見る",
+  },
+
   terms: [
     {
       label: "担当範囲",
@@ -86,7 +108,7 @@ export const ABOUT: About = aboutSchema.parse({
     {
       label: "保守",
       value:
-        "継続的な保守契約は基本的に受けていません。軽微な更新やバグ対応はご相談ください。",
+        "制作後も継続して見る場合は、月額のKakariでお受けしています。軽微な更新やバグ対応だけのご相談もどうぞ。",
     },
   ],
 
