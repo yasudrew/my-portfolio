@@ -88,12 +88,12 @@ export const ABOUT: About = aboutSchema.parse({
   },
 
   service: {
-    name: "KakarIT（カカリト）",
+    name: "tekutan（テクタン）",
     tagline: "あなたのためのITかかりつけ",
     detail:
       "個人で事業をしている方や少人数のチーム向けに、月額でITまわりを見るサービスも個人でやっています。ホームページの更新から、業務の自動化やAIの使いどころまで。月4,980円から、初回のIT健康診断は無料です。",
     url: "https://kakari.maro-create.com/",
-    cta: "KakarIT のサイトを見る",
+    cta: "tekutan のサイトを見る",
   },
 
   terms: [
