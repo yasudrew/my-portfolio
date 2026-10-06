@@ -29,13 +29,12 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  // Crawlers need absolute URLs for the OG card. Vercel supplies the deployment
-  // host at build time; the fallback keeps local previews resolving.
+  // Crawlers need absolute URLs for the OG card. NEXT_PUBLIC_SITE_URL is set in
+  // the host's build settings; production builds fall back to the real domain and
+  // the dev server to localhost so local previews keep resolving.
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ??
-      (process.env.VERCEL_PROJECT_PRODUCTION_URL
-        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-        : "http://localhost:3000"),
+      (process.env.NODE_ENV === "production" ? "https://maro-create.com" : "http://localhost:3000"),
   ),
   title: {
     default: "marocreate — Portfolio",

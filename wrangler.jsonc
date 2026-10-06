@@ -1,0 +1,11 @@
+{
+  // Cloudflare Workers で静的サイトとして配信する設定（next build の書き出し先 out/ をそのまま公開）
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "my-portfolio",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./out",
+    // 存在しないURLは out/404.html を 404 で返す
+    "not_found_handling": "404-page"
+  }
+}
