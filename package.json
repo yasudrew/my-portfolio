@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "shots": "python3 scripts/capture-work-shots.py",
-    "og": "python3 scripts/make-og.py"
+    "og": "python3 scripts/make-og.py",
+    "preview:cf": "next build && wrangler dev",
+    "deploy": "next build && wrangler deploy"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
@@ -36,6 +38,7 @@
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.147.0"
   }
 }
