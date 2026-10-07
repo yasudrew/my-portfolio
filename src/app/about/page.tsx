@@ -43,7 +43,7 @@ export default function AboutPage() {
         </section>
 
         <section className="grid gap-4 border-t border-edge-soft pt-8">
-          <Label>つくっているサービス</Label>
+          <Label>運営しているサービス</Label>
           <div className="grid gap-4 sm:grid-cols-2">
             {SERVICES.map((service) => (
               <a
