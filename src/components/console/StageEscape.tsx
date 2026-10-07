@@ -4,12 +4,12 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 /**
- * Esc returns to the menu.
+ * Esc goes one level up: to the menu, or to About from the playground.
  *
  * Behavioural only — it renders nothing. The visible way back is the HUD
  * breadcrumb, because a keyboard-only exit strands anyone using a mouse.
  */
-export function StageEscape() {
+export function StageEscape({ href = "/" }: { href?: string }) {
   const router = useRouter();
 
   useEffect(() => {
@@ -21,12 +21,12 @@ export function StageEscape() {
         return;
       }
       event.preventDefault();
-      router.push("/", { transitionTypes: ["nav-back"] });
+      router.push(href, { transitionTypes: ["nav-back"] });
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [router]);
+  }, [router, href]);
 
   return null;
 }

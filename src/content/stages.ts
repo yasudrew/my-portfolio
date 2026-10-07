@@ -1,15 +1,18 @@
 import { z } from "zod";
 
+import type { ServiceId } from "@/content/services";
+
 /**
  * The console's structure.
  *
- * One main section and a playground, not two equal halves. An even split reads
- * as "which of these is he, then?"; a weighted one answers before the question
- * is asked — an engineer, who also makes things for the fun of it. The work is
- * the front door; Sound, Lab and Thought are the room behind it.
+ * The board leads with the two services (see `services.ts`), then the client
+ * work and About side by side. Work is the wider of the pair: it is the other
+ * half of the claim — an engineer who runs his own things *and* builds for
+ * others — while About is where a visitor goes to decide whether to ask.
  *
- * `about` is here for its route and metadata but is not a stage: it is
- * information about a person, not something they made, so it lives in the HUD.
+ * Sound, Lab and Thought are the room behind it. They keep their own routes but
+ * leave the board: they are reached from About, as the things made without a
+ * brief, so they no longer compete with the work for the first screen.
  */
 export const stageSchema = z.object({
   id: z.enum(["work", "sound", "lab", "thought", "about"]),
@@ -17,11 +20,10 @@ export const stageSchema = z.object({
   /** the short Japanese reading shown beside the label */
   jp: z.string(),
   /**
-   * `main` — the work, given the weight of the screen
-   * `play` — made without a brief
-   * `meta` — not on the board at all
+   * `board` — on the first screen, under the services
+   * `play` — made without a brief, reached from About
    */
-  group: z.enum(["main", "play", "meta"]),
+  group: z.enum(["board", "play"]),
   /** the one-line answer to "what is this and why" */
   lede: z.string(),
   /** the verb on each card in this stage — what the visitor is invited to do */
@@ -45,8 +47,8 @@ const RAW: readonly Stage[] = [
   {
     id: "work",
     label: "Work",
-    jp: "仕事",
-    group: "main",
+    jp: "受託開発",
+    group: "board",
     lede: "デザイナーから受けて、実装・設計・CMS構築を担当した仕事。カンプに含まれない動きの設計は、毎回こちらで組み立てています。",
     action: "Open",
     tags: ["Web", "Tool", "Automation"],
@@ -86,20 +88,15 @@ const RAW: readonly Stage[] = [
     id: "about",
     label: "About",
     jp: "自己紹介",
-    group: "meta",
-    lede: "何をする人で、どこまで引き受けて、どれくらいかかるのか。依頼を検討するときに要る情報をここにまとめています。",
+    group: "board",
+    lede: "何をする人で、どこまで引き受けて、どれくらいかかるのか。依頼を検討するときに要る情報と、仕事の外でつくっている曲・実験・記事への入口をまとめています。",
     action: "Open",
     tags: ["Profile", "Contact"],
-    holds: ["Profile", "Skills", "Contact"],
+    holds: ["Profile", "Playground", "Contact"],
   },
 ];
 
 export const STAGES: readonly Stage[] = RAW.map((stage) => stageSchema.parse(stage));
-
-/** The stages that appear on the board, in reading order. */
-export const BOARD_STAGES: readonly Stage[] = STAGES.filter(
-  (stage) => stage.group !== "meta",
-);
 
 export function stageById(id: string): Stage | undefined {
   return STAGES.find((stage) => stage.id === id);
@@ -109,23 +106,25 @@ export function stagesInGroup(group: StageGroup): readonly Stage[] {
   return STAGES.filter((stage) => stage.group === group);
 }
 
-/** Heading for the playground strip. The main section needs none — it is the work. */
+/** Heading for the playground, now a section of About. */
 export const PLAY_HEADING = { label: "Playground", jp: "遊び場" };
 
+/** Everything that can hold the board's highlight. */
+export type BoardId = ServiceId | "work" | "about";
+
 /**
- * Which stage each arrow key leads to.
+ * Which tile each arrow key leads to.
  *
- * Written out rather than derived: the board is one wide panel over a row of
- * three, and spelling out the adjacencies keeps movement obvious as the shape
- * changes. `work`'s `down` and the row's `up` are filled in at runtime so the
- * visitor returns to whichever tile they came from.
+ * Written out rather than derived: the board is a two-by-two of unequal
+ * widths, and spelling out the adjacencies keeps movement obvious if the shape
+ * changes again.
  */
 export const NAV: Record<
-  Exclude<StageId, "about">,
-  Partial<Record<"left" | "right" | "up" | "down", StageId>>
+  BoardId,
+  Partial<Record<"left" | "right" | "up" | "down", BoardId>>
 > = {
-  work: { down: "sound" },
-  sound: { up: "work", right: "lab" },
-  lab: { up: "work", left: "sound", right: "thought" },
-  thought: { up: "work", left: "lab" },
+  tekutan: { right: "cognitive-traits", down: "work" },
+  "cognitive-traits": { left: "tekutan", down: "about" },
+  work: { up: "tekutan", right: "about" },
+  about: { up: "cognitive-traits", left: "work" },
 };

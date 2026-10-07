@@ -28,7 +28,7 @@ export function StageScreen({
       default="none"
     >
       <div className="flex min-h-0 flex-1 flex-col">
-        <StageEscape />
+        <StageEscape href={stage.group === "play" ? "/about" : "/"} />
 
         <div className="mx-auto grid w-full max-w-shell gap-3 px-4 pt-7 md:px-9 md:pt-10">
           <ViewTransition name={`stage-${stage.id}`} share="stage-morph" default="none">

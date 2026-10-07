@@ -70,6 +70,19 @@ export function HUD() {
                 Menu
               </Link>
               <span className="text-ink-faint">/</span>
+              {/* the playground now hangs off About, so the trail says so */}
+              {stage.group === "play" ? (
+                <>
+                  <Link
+                    href="/about"
+                    transitionTypes={["nav-back"]}
+                    className="text-ink-faint transition-colors duration-200 hover:text-blue-lit"
+                  >
+                    About
+                  </Link>
+                  <span className="text-ink-faint">/</span>
+                </>
+              ) : null}
               <span className="text-blue-lit">{stage.label}</span>
             </>
           ) : (
@@ -77,9 +90,9 @@ export function HUD() {
           )}
         </span>
 
-        {/* About is information about a person, not something they made, so it
-            sits in the frame rather than on the board with the work. */}
-        {pathname !== "/about" ? (
+        {/* About is on the board too; the frame keeps a way to it from every
+            stage, because it is where the contact details live. */}
+        {pathname !== "/about" && stage?.group !== "play" ? (
           <Link
             href="/about"
             transitionTypes={["nav-forward"]}

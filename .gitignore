@@ -42,3 +42,6 @@ next-env.d.ts
 
 # cloudflare (wrangler)
 .wrangler
+
+# generated at build time from NEXT_PUBLIC_ADSENSE_CLIENT
+/public/ads.txt

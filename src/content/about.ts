@@ -9,6 +9,9 @@ import { z } from "zod";
  * contact. Most portfolios answer only the first — so the terms below are
  * stated plainly rather than left to be discovered in a first call.
  *
+ * The services run under this name are not here: they live in `services.ts`,
+ * shared with the board, so the two can never describe them differently.
+ *
  * Including what is *not* covered (design, ongoing maintenance) is deliberate.
  * A stated boundary reads as someone who knows their shape; a vague one costs
  * both sides a meeting.
@@ -30,19 +33,6 @@ export const aboutSchema = z.object({
     client: z.array(z.string()).min(1),
     personal: z.array(z.string()).min(1),
     note: z.string(),
-  }),
-  /**
-   * The monthly service for small shops, run separately under its own name.
-   * Linked from here rather than folded into `offers`: the reader of this page
-   * is usually a designer, and the service is for their clients' neighbours,
-   * not for them — so it gets one block and a way out, not the headline.
-   */
-  service: z.object({
-    name: z.string(),
-    tagline: z.string(),
-    detail: z.string(),
-    url: z.string().url(),
-    cta: z.string(),
   }),
   terms: z.array(z.object({ label: z.string(), value: z.string() })).min(1),
   contact: z.object({
@@ -87,15 +77,6 @@ export const ABOUT: About = aboutSchema.parse({
     note: "受託ではHTML/CSS/JavaScript/WordPressを使っています。Next.jsなどは個人制作で扱っているもので、受託での実績はまだありません（このサイトがそれです）。",
   },
 
-  service: {
-    name: "tekutan（テクタン）",
-    tagline: "あなたのためのITパートナー",
-    detail:
-      "個人で事業をしている方や少人数のチーム向けに、月額でITまわりを見るサービスも個人でやっています。ホームページの更新から、業務の自動化やAIの使いどころまで。月4,980円から、初回のIT健康診断は無料です。",
-    url: "https://tekutan.maro-create.com/",
-    cta: "tekutan のサイトを見る",
-  },
-
   terms: [
     {
       label: "担当範囲",
@@ -108,7 +89,7 @@ export const ABOUT: About = aboutSchema.parse({
     {
       label: "保守",
       value:
-        "制作後も継続して見る場合は、月額のKakariでお受けしています。軽微な更新やバグ対応だけのご相談もどうぞ。",
+        "制作後も継続して見る場合は、月額のtekutanでお受けしています。軽微な更新やバグ対応だけのご相談もどうぞ。",
     },
   ],
 
