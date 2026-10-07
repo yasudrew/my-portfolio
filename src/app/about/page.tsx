@@ -1,8 +1,21 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { StageScreen } from "@/components/console/StageScreen";
 import { ABOUT } from "@/content/about";
+import { LAB } from "@/content/lab";
+import { SERVICES } from "@/content/services";
+import { PLAY_HEADING, stagesInGroup, type StageId } from "@/content/stages";
+import { THOUGHTS } from "@/content/thought";
+import { TRACKS } from "@/content/tracks";
+
+/** Entry counts for the playground. Only real content is counted. */
+const PLAY_COUNTS: Partial<Record<StageId, number>> = {
+  sound: TRACKS.length,
+  lab: LAB.length,
+  thought: THOUGHTS.length,
+};
 
 export const metadata: Metadata = { title: "About" };
 
@@ -29,8 +42,53 @@ export default function AboutPage() {
           </Link>
         </section>
 
+        <section className="grid gap-4 border-t border-edge-soft pt-8">
+          <Label>つくっているサービス</Label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {SERVICES.map((service) => (
+              <a
+                key={service.id}
+                href={service.url}
+                target="_blank"
+                rel="noopener"
+                className="group grid content-start gap-3 rounded-lg border border-edge p-3 transition-colors duration-200 hover:border-blue-lit/60"
+              >
+                <div
+                  className="overflow-hidden rounded-[3px]"
+                  style={{ backgroundColor: service.thumbBg }}
+                >
+                  <Image
+                    src={service.thumb}
+                    alt=""
+                    width={960}
+                    height={504}
+                    className="h-auto w-full"
+                  />
+                </div>
+                <p className="grid gap-1 px-1">
+                  <span className="flex items-baseline gap-3">
+                    <span className="text-[1.05rem] tracking-tight text-ink">
+                      {service.name}
+                    </span>
+                    <span className="font-mono text-[0.62rem] tracking-[0.12em] text-ink-faint">
+                      {service.jp}
+                    </span>
+                  </span>
+                  <span className="text-[0.88rem] text-ink-dim">{service.tagline}</span>
+                </p>
+                <p className="px-1 text-[0.9rem] leading-relaxed text-ink-dim">
+                  {service.lede}
+                </p>
+                <span className="px-1 pb-1 text-[0.9rem] text-blue-lit underline-offset-[6px] transition-colors duration-200 group-hover:text-ink group-hover:underline">
+                  サイトを見る ↗
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+
         <section className="grid gap-5 border-t border-edge-soft pt-8">
-          <Label>できること</Label>
+          <Label>受託でできること</Label>
           <dl className="grid gap-5">
             {ABOUT.offers.map((offer) => (
               <div key={offer.title} className="grid gap-1.5">
@@ -43,31 +101,6 @@ export default function AboutPage() {
               </div>
             ))}
           </dl>
-        </section>
-
-        <section className="grid gap-4 border-t border-edge-soft pt-8">
-          <Label>お店向けの月額サービス</Label>
-          <div className="grid gap-3 rounded-lg border border-edge p-5">
-            <p className="grid gap-1">
-              <span className="text-[1.05rem] tracking-tight text-ink">
-                {ABOUT.service.name}
-              </span>
-              <span className="text-[0.88rem] text-ink-dim">
-                {ABOUT.service.tagline}
-              </span>
-            </p>
-            <p className="text-[0.94rem] leading-relaxed text-ink-dim">
-              {ABOUT.service.detail}
-            </p>
-            <a
-              href={ABOUT.service.url}
-              target="_blank"
-              rel="noopener"
-              className="justify-self-start text-[0.94rem] text-blue-lit underline-offset-[6px] transition-colors duration-200 hover:text-ink hover:underline"
-            >
-              {ABOUT.service.cta} ↗
-            </a>
-          </div>
         </section>
 
         <section className="grid gap-5 border-t border-edge-soft pt-8">
@@ -109,6 +142,48 @@ export default function AboutPage() {
             {ABOUT.contact.email}
           </a>
           <p className="text-[0.88rem] text-ink-faint">{ABOUT.contact.note}</p>
+        </section>
+
+        <section className="grid gap-4 border-t border-edge-soft pt-8">
+          <Label>
+            {PLAY_HEADING.jp} — {PLAY_HEADING.label}
+          </Label>
+          <p className="text-[0.9rem] leading-relaxed text-ink-faint">
+            仕事の外で、頼まれずにつくっているもの。
+          </p>
+          <ul className="grid gap-3 sm:grid-cols-3">
+            {stagesInGroup("play").map((stage) => {
+              const count = PLAY_COUNTS[stage.id];
+              return (
+                <li key={stage.id}>
+                  <Link
+                    href={`/${stage.id}`}
+                    transitionTypes={["nav-forward"]}
+                    className="group grid h-full content-start gap-2 rounded-sm border border-l-2 border-edge-soft border-l-edge-soft p-4 transition-colors duration-200 hover:border-l-amber hover:bg-blue/10"
+                  >
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="flex items-baseline gap-3">
+                        <span className="text-[1.15rem] leading-none font-light tracking-tight text-ink">
+                          {stage.label}
+                        </span>
+                        <span className="font-mono text-[0.62rem] tracking-[0.12em] text-ink-faint">
+                          {stage.jp}
+                        </span>
+                      </span>
+                      {count !== undefined ? (
+                        <span className="font-mono text-[0.6rem] tracking-[0.1em] text-ink-faint tabular-nums">
+                          {String(count).padStart(2, "0")}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="text-[0.84rem] leading-relaxed text-ink-dim">
+                      {stage.lede}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       </div>
     </StageScreen>

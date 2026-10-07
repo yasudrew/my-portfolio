@@ -2,22 +2,22 @@
 
 import { create } from "zustand";
 
-import type { StageId } from "@/content/stages";
+import type { BoardId } from "@/content/stages";
 
 /**
- * Which stage is highlighted on the board.
+ * Which tile is highlighted on the board.
  *
  * Kept outside the menu component so that returning from `/work` puts the
- * highlight back on Work instead of resetting to the main panel. Boot state is
+ * highlight back on Work instead of resetting to the first service. Boot state is
  * deliberately *not* here — see `BootProvider` for why that one has to be React
  * state.
  */
 type ConsoleState = {
-  cursor: StageId;
-  setCursor: (cursor: StageId) => void;
+  cursor: BoardId;
+  setCursor: (cursor: BoardId) => void;
 };
 
 export const useConsoleStore = create<ConsoleState>((set) => ({
-  cursor: "work",
+  cursor: "tekutan",
   setCursor: (cursor) => set({ cursor }),
 }));

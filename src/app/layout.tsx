@@ -28,6 +28,9 @@ const notoSansJP = Noto_Sans_JP({
   preload: false,
 });
 
+/** AdSense publisher ID. Set in the host's build settings; absent means no AdSense at all. */
+const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim() || null;
+
 export const metadata: Metadata = {
   // Crawlers need absolute URLs for the OG card. NEXT_PUBLIC_SITE_URL is set in
   // the host's build settings; production builds fall back to the real domain and
@@ -48,6 +51,9 @@ export const metadata: Metadata = {
     locale: "ja_JP",
   },
   twitter: { card: "summary_large_image" },
+  // AdSense verifies the root domain by this tag; ads.txt is written at build
+  // time (scripts/write-ads-txt.mjs) from the same variable.
+  ...(ADSENSE_CLIENT ? { other: { "google-adsense-account": ADSENSE_CLIENT } } : {}),
 };
 
 export const viewport: Viewport = {

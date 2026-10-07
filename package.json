@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/write-ads-txt.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "shots": "python3 scripts/capture-work-shots.py",
     "og": "python3 scripts/make-og.py",
-    "preview:cf": "next build && wrangler dev",
-    "deploy": "next build && wrangler deploy"
+    "preview:cf": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

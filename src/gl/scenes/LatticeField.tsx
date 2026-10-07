@@ -5,7 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { glsl } from "@/gl/shaders/glsl";
-import type { StageId } from "@/content/stages";
+import type { BoardId } from "@/content/stages";
 import { useConsoleStore } from "@/lib/state/console";
 import { budgetFor } from "@/lib/quality/detect";
 import { frameState } from "@/lib/state/frame";
@@ -129,12 +129,11 @@ export function LatticeField() {
   // Values are in shader UV, which is bottom-up while the board reads top-down.
   const target = useRef(0.6);
   useEffect(() => {
-    const BAND: Record<StageId, number> = {
-      work: 0.64,
-      sound: 0.34,
-      lab: 0.34,
-      thought: 0.34,
-      about: 0.5,
+    const BAND: Record<BoardId, number> = {
+      tekutan: 0.64,
+      "cognitive-traits": 0.64,
+      work: 0.34,
+      about: 0.34,
     };
     target.current = BAND[cursor];
   }, [cursor]);
