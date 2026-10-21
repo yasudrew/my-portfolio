@@ -74,6 +74,10 @@ export function StageMenu() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      // The introduction below the first screen has its own links; keys
+      // pressed there belong to them, not to the console.
+      if (!ownsKey(event.target)) return;
+
       if (!booted) {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
@@ -111,11 +115,15 @@ export function StageMenu() {
   }, [booted]);
 
   if (!booted) {
-    return <TitleCard ref={lockupRef} phase={phase} onStart={boot} />;
+    return (
+      <FirstScreen booted={false}>
+        <TitleCard ref={lockupRef} phase={phase} onStart={boot} />
+      </FirstScreen>
+    );
   }
 
   return (
-    <>
+    <FirstScreen booted>
       <div className="mx-auto grid min-h-0 w-full max-w-shell flex-1 grid-rows-[1fr_auto] gap-4 overflow-y-auto px-4 py-4 sm:gap-6 sm:py-6 md:px-9 md:py-8">
         <div className="grid content-center gap-3 sm:gap-4">
           <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
@@ -170,7 +178,44 @@ export function StageMenu() {
           { key: "Enter", label: "Open" },
         ]}
       />
-    </>
+    </FirstScreen>
+  );
+}
+
+/**
+ * Whether a key press is the console's to handle. Regions below the first
+ * screen (the introduction, the footer) mark themselves `data-own-keys`: their
+ * links keep their own Enter and arrows instead of starting or steering the
+ * console.
+ */
+function ownsKey(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return true;
+  return target.closest("[data-own-keys]") === null;
+}
+
+/**
+ * Exactly one screen, so the introduction below starts at the fold.
+ *
+ * Once booted the sticky HUD takes the top 3.5rem (its py-4 around a 24px
+ * mark), and the board gives that height back rather than pushing its own
+ * bottom edge off the screen.
+ */
+function FirstScreen({
+  booted,
+  children,
+}: {
+  booted: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={[
+        "flex shrink-0 flex-col",
+        booted ? "min-h-[calc(100svh-3.5rem)]" : "min-h-svh",
+      ].join(" ")}
+    >
+      {children}
+    </div>
   );
 }
 

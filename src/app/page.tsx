@@ -1,5 +1,6 @@
 import { ViewTransition } from "react";
 
+import { HomeIntro } from "@/components/home/HomeIntro";
 import { StageMenu } from "@/components/console/StageMenu";
 
 export default function MenuPage() {
@@ -12,7 +13,9 @@ export default function MenuPage() {
       default="none"
     >
       <div className="flex min-h-0 flex-1 flex-col">
+        {/* StageMenu holds the first screen; the introduction waits below it */}
         <StageMenu />
+        <HomeIntro />
       </div>
     </ViewTransition>
   );
