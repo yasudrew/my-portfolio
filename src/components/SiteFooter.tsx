@@ -24,7 +24,8 @@ const linkClass =
  */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-edge-soft px-4 pt-6 pb-8 md:px-9">
+    // data-own-keys: on the home page the console's key handling stays out of here
+    <footer data-own-keys className="border-t border-edge-soft px-4 pt-6 pb-8 md:px-9">
       <div className="mx-auto grid w-full max-w-shell gap-4 font-mono text-[0.68rem] tracking-[0.1em]">
         <nav aria-label="サイト内のリンク" className="flex flex-wrap gap-x-6 gap-y-2">
           {STAGE_LINKS.map((link) => (
