@@ -5,6 +5,7 @@ import { HUD } from "@/components/console/HUD";
 import { DebugHUD } from "@/components/DebugHUD";
 import { GLCanvas } from "@/gl/GLCanvas";
 import { FrameLoopProvider } from "@/lib/loop/FrameLoopProvider";
+import { SITE_URL } from "@/lib/site";
 import { BootProvider } from "@/lib/state/BootProvider";
 
 import "./globals.css";
@@ -32,13 +33,8 @@ const notoSansJP = Noto_Sans_JP({
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim() || null;
 
 export const metadata: Metadata = {
-  // Crawlers need absolute URLs for the OG card. NEXT_PUBLIC_SITE_URL is set in
-  // the host's build settings; production builds fall back to the real domain and
-  // the dev server to localhost so local previews keep resolving.
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ??
-      (process.env.NODE_ENV === "production" ? "https://maro-create.com" : "http://localhost:3000"),
-  ),
+  // Crawlers need absolute URLs for the OG card; shared with the sitemap.
+  metadataBase: SITE_URL,
   title: {
     default: "marocreate — Portfolio",
     template: "%s — marocreate",
