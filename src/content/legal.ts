@@ -61,8 +61,6 @@ export const OPERATOR = operatorSchema.parse({
   rows: [
     { label: "屋号", value: ABOUT.brand },
     { label: "運営者", value: ABOUT.name },
-    // TODO: 都道府県はオーナー確認中。決まったら差し替える
-    { label: "所在地", value: "（都道府県）" },
     {
       label: "事業内容",
       value: `Webサイトの実装・設計・CMS構築（デザイナーからの受託）、${SERVICES.map((service) => service.name).join("・")}の運営`,
