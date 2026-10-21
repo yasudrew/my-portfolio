@@ -3,6 +3,7 @@ import { JetBrains_Mono, Noto_Sans_JP, Outfit } from "next/font/google";
 
 import { HUD } from "@/components/console/HUD";
 import { DebugHUD } from "@/components/DebugHUD";
+import { SiteFooter } from "@/components/SiteFooter";
 import { GLCanvas } from "@/gl/GLCanvas";
 import { FrameLoopProvider } from "@/lib/loop/FrameLoopProvider";
 import { SITE_URL } from "@/lib/site";
@@ -78,6 +79,8 @@ export default function RootLayout({
               {children}
             </main>
           </div>
+          {/* outside the full-height frame, so it never takes room from the first screen */}
+          <SiteFooter />
         </BootProvider>
         <DebugHUD />
       </body>

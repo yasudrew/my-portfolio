@@ -8,7 +8,17 @@ import { absoluteUrl } from "@/lib/site";
 export const dynamic = "force-static";
 
 /** Every page that has its own route; the detail pages follow from the content. */
-const PAGES = ["/", "/work", "/about", "/about/career", "/lab", "/sound", "/thought"] as const;
+const PAGES = [
+  "/",
+  "/work",
+  "/about",
+  "/about/career",
+  "/lab",
+  "/sound",
+  "/thought",
+  "/contact",
+  "/privacy",
+] as const;
 
 /**
  * No `lastModified`: the content files carry no dates, and stamping the build
