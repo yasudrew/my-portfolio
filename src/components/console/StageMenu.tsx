@@ -42,13 +42,6 @@ function requireStage(id: "work" | "about"): Stage {
 const WORK = requireStage("work");
 const ABOUT = requireStage("about");
 
-/** The line under the board, for whichever tile holds the highlight. */
-function ledeFor(id: BoardId): string {
-  if (id === "work") return WORK.lede;
-  if (id === "about") return ABOUT.lede;
-  return SERVICES.find((service) => service.id === id)?.lede ?? "";
-}
-
 
 const ARROWS: Record<string, "left" | "right" | "up" | "down"> = {
   ArrowLeft: "left",
@@ -212,14 +205,12 @@ function Board() {
           </div>
         </div>
 
+        {/* Each tile carries its own description now, so the line that used to
+            spell out the highlighted one is gone; the monster still follows. */}
         <div
-          className="stage-in flex items-end justify-between gap-4 pb-1"
+          className="stage-in flex items-end justify-end gap-4 pb-1"
           style={{ animationDelay: "430ms" }}
         >
-          <p className="line-clamp-3 max-w-[56ch] text-[0.8rem] leading-relaxed text-ink-dim sm:line-clamp-none sm:text-[0.92rem]">
-            {ledeFor(cursor)}
-          </p>
-
           <HummingMonster
             key={cursor}
             className="guide-perk pointer-events-none w-14 shrink-0 text-amber sm:w-[clamp(84px,12vw,132px)]"
@@ -345,6 +336,7 @@ function ServicePanel({
         </div>
 
         <p className="text-[0.88rem] text-ink-dim">{service.tagline}</p>
+        <p className="text-[0.84rem] leading-relaxed text-ink-dim">{service.lede}</p>
 
         <Pillars items={service.points} selected={selected} />
       </div>
@@ -394,6 +386,8 @@ function StageTile({
           ) : null}
         </p>
       </div>
+
+      <p className="text-[0.84rem] leading-relaxed text-ink-dim">{stage.lede}</p>
 
       <Pillars items={stage.holds} selected={selected} />
     </Link>
