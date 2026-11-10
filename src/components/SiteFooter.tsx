@@ -19,13 +19,12 @@ const linkClass =
  * The site-wide footer: every page links to the services, the contact details
  * and the privacy policy from here.
  *
- * It sits outside the full-height console frame, so on the board and the title
- * card it waits below the first screen rather than taking room from it.
+ * It sits outside the full-height frame, so on a short page it waits below the
+ * first screen rather than taking room from it.
  */
 export function SiteFooter() {
   return (
-    // data-own-keys: on the home page the console's key handling stays out of here
-    <footer data-own-keys className="border-t border-edge-soft px-4 pt-6 pb-8 md:px-9">
+    <footer className="border-t border-edge-soft px-4 pt-6 pb-8 md:px-9">
       <div className="mx-auto grid w-full max-w-shell gap-4 font-mono text-[0.68rem] tracking-[0.1em]">
         <nav aria-label="サイト内のリンク" className="flex flex-wrap gap-x-6 gap-y-2">
           {STAGE_LINKS.map((link) => (

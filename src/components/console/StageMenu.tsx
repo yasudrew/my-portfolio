@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -9,8 +9,16 @@ import { KeyGuide } from "@/components/console/KeyGuide";
 import { SERVICES, type Service } from "@/content/services";
 import { NAV, stageById, type BoardId, type Stage } from "@/content/stages";
 import { WORKS } from "@/content/works";
-import { useBoot, type BootPhase } from "@/lib/state/BootProvider";
+import {
+  getLogoLive,
+  hoverLogo,
+  leaveLogo,
+  playLogo,
+  releaseLogo,
+  subscribeLogoLive,
+} from "@/gl/logoDisperse";
 import { useConsoleStore } from "@/lib/state/console";
+import { useAppStore } from "@/lib/state/store";
 
 /**
  * Move keyboard focus to a tile.
@@ -41,12 +49,101 @@ function ledeFor(id: BoardId): string {
   return SERVICES.find((service) => service.id === id)?.lede ?? "";
 }
 
+
+const ARROWS: Record<string, "left" | "right" | "up" | "down"> = {
+  ArrowLeft: "left",
+  ArrowRight: "right",
+  ArrowUp: "up",
+  ArrowDown: "down",
+};
+
+/**
+ * The home page: the logo on the first screen, the board right under it.
+ *
+ * There used to be a door here — a title card that had to be clicked before
+ * the board existed at all. It made a good entrance and an empty page: a
+ * visitor who scrolled, or a reader without JavaScript, met a logo and nothing
+ * else. Now the board is always there, and the logo became something to play
+ * with instead of something to get past.
+ */
 export function StageMenu() {
-  const { phase, booted, boot } = useBoot();
+  return (
+    <>
+      <Hero />
+      <Board />
+    </>
+  );
+}
+
+/**
+ * The first screen. One screen tall under the sticky HUD (its py-4 around a
+ * 24px mark, 3.5rem), so the board starts at the fold.
+ *
+ * The lockup is a button: clicking takes it apart into particles and puts it
+ * back together, and a pointer over it pushes the dots aside. Both are handed
+ * to the WebGL layer, which draws the logo in dots while the `<img>` steps out
+ * of the way; where WebGL is missing or motion is reduced the image simply
+ * stays.
+ */
+function Hero() {
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const live = useSyncExternalStore(subscribeLogoLive, getLogoLive, () => false);
+  const reducedMotion = useAppStore((state) => state.reducedMotion);
+
+  useEffect(() => {
+    const image = imageRef.current;
+    return () => {
+      if (image) releaseLogo(image);
+    };
+  }, []);
+
+  const onPointer = (event: React.PointerEvent) => {
+    if (reducedMotion || !imageRef.current) return;
+    hoverLogo(imageRef.current, event.clientX, event.clientY);
+  };
+
+  return (
+    <div className="grid min-h-[calc(100svh-3.5rem)] shrink-0 place-content-center justify-items-center gap-10 px-4 text-center">
+      <button
+        type="button"
+        onClick={() => {
+          if (!reducedMotion && imageRef.current) playLogo(imageRef.current);
+        }}
+        onPointerEnter={onPointer}
+        onPointerMove={onPointer}
+        onPointerLeave={leaveLogo}
+        onPointerCancel={leaveLogo}
+        className="cursor-pointer"
+      >
+        {/* No transition on the hand-off: the dots take over in the exact
+            frame this goes, and a fade would show both at once. */}
+        <Image
+          ref={imageRef}
+          src="/brand/logo_grad.png"
+          alt="marocreate — Connect small, land thought"
+          width={1184}
+          height={203}
+          priority
+          className={
+            live ? "h-auto w-[min(78vw,34rem)] opacity-0" : "h-auto w-[min(78vw,34rem)]"
+          }
+        />
+      </button>
+
+      <a
+        href="#menu"
+        className="prompt-breathe font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase"
+      >
+        Scroll ↓
+      </a>
+    </div>
+  );
+}
+
+/** The services, Work and About, a screen of their own under the logo. */
+function Board() {
   const cursor = useConsoleStore((state) => state.cursor);
   const setCursor = useConsoleStore((state) => state.setCursor);
-
-  const lockupRef = useRef<HTMLButtonElement | null>(null);
 
   /**
    * Move the highlight and take the focus with it.
@@ -64,67 +161,25 @@ export function StageMenu() {
     [setCursor],
   );
 
-  const navigate = useCallback(
-    (direction: "left" | "right" | "up" | "down") => {
-      const next = NAV[cursor][direction];
-      if (next) selectTile(next);
-    },
-    [cursor, selectTile],
-  );
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      // The introduction below the first screen has its own links; keys
-      // pressed there belong to them, not to the console.
-      if (!ownsKey(event.target)) return;
-
-      if (!booted) {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          lockupRef.current?.click();
-        }
-        return;
-      }
-
-      const map: Record<string, "left" | "right" | "up" | "down"> = {
-        ArrowLeft: "left",
-        ArrowRight: "right",
-        ArrowUp: "up",
-        ArrowDown: "down",
-      };
-      const direction = map[event.key];
-      if (!direction) return;
-      event.preventDefault();
-      navigate(direction);
-      // Enter is deliberately not handled: the tiles are real links, so the
-      // browser already activates the focused one.
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [booted, navigate]);
-
-  // Entering the board hands focus to the current tile so the arrows work
-  // without asking the visitor to click first.
-  useEffect(() => {
-    if (!booted) return;
-    const id = window.setTimeout(() => focusTile(cursor), 280);
-    return () => window.clearTimeout(id);
-    // Only on the boot edge — `selectTile` handles focus from then on.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [booted]);
-
-  if (!booted) {
-    return (
-      <FirstScreen booted={false}>
-        <TitleCard ref={lockupRef} phase={phase} onStart={boot} />
-      </FirstScreen>
-    );
-  }
+  // Arrows steer the board only while a tile has the focus; anywhere else on
+  // the page they scroll it as usual. Enter is deliberately not handled: the
+  // tiles are real links, so the browser already activates the focused one.
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    const direction = ARROWS[event.key];
+    if (!direction) return;
+    const next = NAV[cursor][direction];
+    event.preventDefault();
+    if (next) selectTile(next);
+  };
 
   return (
-    <FirstScreen booted>
-      <div className="mx-auto grid min-h-0 w-full max-w-shell flex-1 grid-rows-[1fr_auto] gap-4 overflow-y-auto px-4 py-4 sm:gap-6 sm:py-6 md:px-9 md:py-8">
+    <section
+      id="menu"
+      aria-label="メニュー"
+      onKeyDown={onKeyDown}
+      className="flex min-h-[calc(100svh-3.5rem)] shrink-0 scroll-mt-14 flex-col"
+    >
+      <div className="mx-auto grid min-h-0 w-full max-w-shell flex-1 grid-rows-[1fr_auto] gap-4 px-4 py-4 sm:gap-6 sm:py-6 md:px-9 md:py-8">
         <div className="grid content-center gap-3 sm:gap-4">
           <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
             {SERVICES.map((service, index) => (
@@ -178,44 +233,7 @@ export function StageMenu() {
           { key: "Enter", label: "Open" },
         ]}
       />
-    </FirstScreen>
-  );
-}
-
-/**
- * Whether a key press is the console's to handle. Regions below the first
- * screen (the introduction, the footer) mark themselves `data-own-keys`: their
- * links keep their own Enter and arrows instead of starting or steering the
- * console.
- */
-function ownsKey(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) return true;
-  return target.closest("[data-own-keys]") === null;
-}
-
-/**
- * Exactly one screen, so the introduction below starts at the fold.
- *
- * Once booted the sticky HUD takes the top 3.5rem (its py-4 around a 24px
- * mark), and the board gives that height back rather than pushing its own
- * bottom edge off the screen.
- */
-function FirstScreen({
-  booted,
-  children,
-}: {
-  booted: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={[
-        "flex shrink-0 flex-col",
-        booted ? "min-h-[calc(100svh-3.5rem)]" : "min-h-svh",
-      ].join(" ")}
-    >
-      {children}
-    </div>
+    </section>
   );
 }
 
@@ -382,62 +400,3 @@ function StageTile({
   );
 }
 
-/**
- * The title card. Shown once per session — returning from a stage drops the
- * visitor straight back into the board rather than replaying the intro.
- *
- * On start it hands its own `<img>` to the WebGL layer, which samples the
- * lockup's pixels and takes it apart. The DOM copy hides on the same frame, so
- * the visitor sees one object coming undone rather than an image swap.
- */
-function TitleCard({
-  ref,
-  phase,
-  onStart,
-}: {
-  ref: React.Ref<HTMLButtonElement>;
-  phase: BootPhase;
-  onStart: (lockup: HTMLElement | null) => void;
-}) {
-  const imageRef = useRef<HTMLImageElement | null>(null);
-  const leaving = phase === "leaving";
-
-  return (
-    <>
-      <button
-        ref={ref}
-        type="button"
-        onClick={() => onStart(imageRef.current)}
-        className="grid flex-1 cursor-pointer place-content-center justify-items-center gap-10 px-4 text-center"
-      >
-        {/* No transition on the way out: the particles pick up in the exact
-            frame this goes, and a fade here would show both at once. */}
-        <Image
-          ref={imageRef}
-          src="/brand/logo_grad.png"
-          alt="marocreate — Connect small, land thought"
-          width={1184}
-          height={203}
-          priority
-          className={
-            leaving
-              ? "h-auto w-[min(78vw,34rem)] opacity-0"
-              : "h-auto w-[min(78vw,34rem)]"
-          }
-        />
-
-        <p
-          className={[
-            "font-mono text-[0.72rem] tracking-[0.24em] text-blue-lit uppercase",
-            "transition-opacity duration-300 ease-fluid",
-            leaving ? "opacity-0" : "prompt-breathe",
-          ].join(" ")}
-        >
-          Press Enter / Click to start
-        </p>
-      </button>
-
-      <KeyGuide guides={[{ key: "Enter", label: "Start" }]} />
-    </>
-  );
-}

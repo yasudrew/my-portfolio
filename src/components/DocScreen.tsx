@@ -28,7 +28,7 @@ export function DocScreen({
       default="none"
     >
       <div className="flex min-h-0 flex-1 flex-col">
-        <StageEscape href="/" />
+        <StageEscape href="/#menu" />
 
         <div className="mx-auto grid w-full max-w-shell gap-3 px-4 pt-7 md:px-9 md:pt-10">
           <h1 className="text-[clamp(1.6rem,4.4vw,2.6rem)] leading-tight font-extralight tracking-[-0.02em]">

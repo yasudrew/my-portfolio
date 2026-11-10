@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 
 import { docPageById } from "@/content/legal";
 import { stageById } from "@/content/stages";
-import { useBoot } from "@/lib/state/BootProvider";
 
 /**
  * The fixed frame around every screen.
@@ -22,16 +21,10 @@ import { useBoot } from "@/lib/state/BootProvider";
  */
 export function HUD() {
   const pathname = usePathname();
-  const { booted } = useBoot();
   const segment = pathname.split("/")[1] ?? "";
   const stage = stageById(segment);
   // privacy and contact sit outside the console but still say where you are
   const doc = stage ? undefined : docPageById(segment);
-
-  // The title card is a closed door: nothing but the lockup and the prompt.
-  // The frame appears only once the visitor has stepped through it.
-  if (pathname === "/" && !booted) return null;
-
 
   return (
     <header
@@ -66,7 +59,7 @@ export function HUD() {
           {stage ? (
             <>
               <Link
-                href="/"
+                href="/#menu"
                 transitionTypes={["nav-back"]}
                 className="text-ink-faint transition-colors duration-200 hover:text-blue-lit"
               >
@@ -91,7 +84,7 @@ export function HUD() {
           ) : doc ? (
             <>
               <Link
-                href="/"
+                href="/#menu"
                 transitionTypes={["nav-back"]}
                 className="text-ink-faint transition-colors duration-200 hover:text-blue-lit"
               >

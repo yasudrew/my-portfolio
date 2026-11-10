@@ -13,7 +13,7 @@ export default function MenuPage() {
       default="none"
     >
       <div className="flex min-h-0 flex-1 flex-col">
-        {/* StageMenu holds the first screen; the introduction waits below it */}
+        {/* the logo, then the board, then who runs it */}
         <StageMenu />
         <HomeIntro />
       </div>
