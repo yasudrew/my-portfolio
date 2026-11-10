@@ -8,9 +8,7 @@ import type { BoardId } from "@/content/stages";
  * Which tile is highlighted on the board.
  *
  * Kept outside the menu component so that returning from `/work` puts the
- * highlight back on Work instead of resetting to the first service. Boot state is
- * deliberately *not* here — see `BootProvider` for why that one has to be React
- * state.
+ * highlight back on Work instead of resetting to the first service.
  */
 type ConsoleState = {
   cursor: BoardId;

@@ -6,9 +6,13 @@ import * as THREE from "three";
 
 import { glsl } from "@/gl/shaders/glsl";
 import {
-  DISPERSE_DURATION,
+  disperseDone,
+  disperseProgress,
   disperseState,
+  hoverState,
   resetDisperse,
+  setLogoLive,
+  setLogoReady,
 } from "@/gl/logoDisperse";
 import { budgetFor, type QualityTier } from "@/lib/quality/detect";
 import { frameState } from "@/lib/state/frame";
@@ -20,6 +24,8 @@ const STRIDE: Record<QualityTier, number> = { low: 6, mid: 4, high: 3 };
 const ALPHA_CUTOFF = 40;
 /** How far a particle can drift, as a fraction of the logo's width. */
 const SPREAD = 0.42;
+/** The pointer's reach, as a multiple of the logo's height. */
+const REPEL_REACH = 1.1;
 
 const VERTEX = glsl`
   attribute vec2 aCell;      // 0..1 position within the logo
@@ -31,6 +37,10 @@ const VERTEX = glsl`
   uniform float uSpread;
   uniform float uPixelRatio;
   uniform float uSize;
+  uniform vec2 uPointer;     // clip space
+  uniform float uRepel;      // 0..1, eased in and out by the pointer
+  uniform float uRadius;     // reach, in clip-space y units
+  uniform float uAspect;     // viewport width / height
 
   varying vec3 vColor;
   varying float vAlpha;
@@ -57,7 +67,19 @@ const VERTEX = glsl`
     // a little lateral wander, phased per particle
     offset.x += sin(eased * 6.2831 + aDrift.z * 12.0) * uSpread * 0.05 * eased;
 
-    gl_Position = vec4(base + offset, 0.0, 1.0);
+    vec2 position = base + offset;
+
+    // The pointer pushes nearby dots aside, measured in screen proportions so
+    // its reach is a circle rather than an ellipse.
+    vec2 away = position - uPointer;
+    away.x *= uAspect;
+    float dist = length(away);
+    float push = uRepel * (1.0 - smoothstep(0.0, uRadius, dist));
+    vec2 dir = dist > 0.0001 ? away / dist : vec2(0.0);
+    dir.x /= uAspect;
+    position += dir * push * uRadius * 0.55;
+
+    gl_Position = vec4(position, 0.0, 1.0);
 
     vColor = aColor;
     vAlpha = 1.0 - eased;
@@ -172,6 +194,10 @@ export function LogoDisperse({ src }: { src: string }) {
       uSpread: { value: SPREAD },
       uPixelRatio: { value: 1 },
       uSize: { value: 2.2 },
+      uPointer: { value: new THREE.Vector2() },
+      uRepel: { value: 0 },
+      uRadius: { value: 0.2 },
+      uAspect: { value: 1 },
     }),
     [],
   );
@@ -192,6 +218,12 @@ export function LogoDisperse({ src }: { src: string }) {
   }, [sampled]);
 
   useEffect(() => () => geometry?.dispose(), [geometry]);
+
+  // the DOM logo may hand itself over only once there is something to draw it
+  useEffect(() => {
+    setLogoReady(geometry !== null);
+    return () => setLogoReady(false);
+  }, [geometry]);
 
   const material = useMemo(
     () =>
@@ -218,41 +250,65 @@ export function LogoDisperse({ src }: { src: string }) {
     uniforms.uSize.value = STRIDE[quality] * 0.9;
   }, [dpr, quality, uniforms]);
 
-  const wasActive = useRef(false);
+  const wasShowing = useRef(false);
+  const repel = useRef(0);
 
   useFrame(() => {
-    if (!disperseState.active) {
-      if (wasActive.current) {
-        wasActive.current = false;
-        setVisible(false);
+    const delta = frameState.time.delta;
+    const { target } = disperseState;
+
+    // Follow the logo element, so a scroll mid-flight keeps dots and lockup
+    // in the same place.
+    if (target) {
+      const box = target.getBoundingClientRect();
+      disperseState.rect = { x: box.x, y: box.y, width: box.width, height: box.height };
+    }
+
+    // ease the push in quickly and let the dots settle back slowly
+    const hovering = hoverState.active && !reducedMotion;
+    const goal = hovering ? 1 : 0;
+    repel.current += (goal - repel.current) * Math.min(1, delta * (hovering ? 9 : 4));
+    if (!hovering && repel.current < 0.003) repel.current = 0;
+
+    let progress = 0;
+    if (disperseState.active) {
+      disperseState.elapsed += delta;
+      const { elapsed, roundTrip } = disperseState;
+      if (reducedMotion) {
+        progress = roundTrip ? 0 : 1;
+        resetDisperse();
+      } else {
+        progress = disperseProgress(elapsed, roundTrip);
+        if (disperseDone(elapsed, roundTrip)) resetDisperse();
       }
+    }
+
+    const showing = disperseState.active || hovering || repel.current > 0;
+    if (showing !== wasShowing.current) {
+      wasShowing.current = showing;
+      setVisible(showing);
+    }
+    // Hand the logo back to the <img> only once the dots are still.
+    if (!showing) {
+      setLogoLive(false);
       return;
     }
 
-    if (!wasActive.current) {
-      wasActive.current = true;
-      setVisible(true);
-    }
-
-    disperseState.elapsed += frameState.time.delta;
-    const progress = reducedMotion
-      ? 1
-      : Math.min(1, disperseState.elapsed / DISPERSE_DURATION);
-    uniforms.uProgress.value = progress;
-
-    // CSS pixels -> clip space. The rect is captured at click time, so a resize
-    // mid-flight is not worth chasing.
+    // CSS pixels -> clip space
     const { rect } = disperseState;
     const w = Math.max(1, size.width);
     const h = Math.max(1, size.height);
+    uniforms.uProgress.value = progress;
     uniforms.uRect.value.set(
       (rect.x / w) * 2 - 1,
       1 - (rect.y / h) * 2,
       (rect.width / w) * 2,
       (rect.height / h) * 2,
     );
-
-    if (progress >= 1) resetDisperse();
+    uniforms.uPointer.value.set((hoverState.x / w) * 2 - 1, 1 - (hoverState.y / h) * 2);
+    uniforms.uRepel.value = repel.current;
+    uniforms.uRadius.value = (rect.height / h) * 2 * REPEL_REACH;
+    uniforms.uAspect.value = w / h;
   });
 
   if (!geometry || !visible) return null;

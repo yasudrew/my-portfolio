@@ -7,7 +7,6 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { GLCanvas } from "@/gl/GLCanvas";
 import { FrameLoopProvider } from "@/lib/loop/FrameLoopProvider";
 import { SITE_URL } from "@/lib/site";
-import { BootProvider } from "@/lib/state/BootProvider";
 
 import "./globals.css";
 
@@ -72,16 +71,14 @@ export default function RootLayout({
         </a>
         <FrameLoopProvider />
         <GLCanvas />
-        <BootProvider>
-          <div className="relative flex min-h-svh flex-col">
-            <HUD />
-            <main id="main" className="flex min-h-0 flex-1 flex-col">
-              {children}
-            </main>
-          </div>
-          {/* outside the full-height frame, so it never takes room from the first screen */}
-          <SiteFooter />
-        </BootProvider>
+        <div className="relative flex min-h-svh flex-col">
+          <HUD />
+          <main id="main" className="flex min-h-0 flex-1 flex-col">
+            {children}
+          </main>
+        </div>
+        {/* outside the full-height frame, so it never takes room from the first screen */}
+        <SiteFooter />
         <DebugHUD />
       </body>
     </html>
